@@ -252,6 +252,11 @@ export function resolveCountryCode(input: string, locale?: string): string | nul
   return null;
 }
 
+/** Get all unique capital names for autocomplete. */
+export function getAllCapitalNames(): string[] {
+  return [...new Set(countries.map((c) => c.capital))].sort();
+}
+
 /** Get all country names for autocomplete.
  *  When a locale is provided, returns localized names.
  */

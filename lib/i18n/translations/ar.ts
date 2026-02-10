@@ -18,7 +18,7 @@ export const ar: Translations = {
   "home.flagsTitle": "سباق الأعلام",
   "home.flagsDesc": "60 ثانية. سمِّ أكبر عدد من الأعلام. مضاعفات للإجابات المتتالية.",
   "home.capitalsTitle": "تحدي العواصم",
-  "home.capitalsDesc": "نفس السؤال لجميع اللاعبين. أسرع إجابة صحيحة تفوز.",
+  "home.capitalsDesc": "اذكر عواصم الدول والدول من عواصمها. في الاتجاهين، تحت الضغط.",
 
   "difficulty.easy": "سهل",
   "difficulty.easyDesc": "2-3 دول مسافة",
@@ -104,4 +104,17 @@ export const ar: Translations = {
   "flags.bestStreak": "أفضل سلسلة",
   "flags.accuracy": "الدقة",
   "flags.answers": "الإجابات",
+
+  "flags.diffCountries": "دول بينهما",
+  "flags.diffRounds": "جولات",
+  "flags.diffEach": "لكل جولة",
+  "flags.diffWrong": "خطأ =",
+
+  "capitals.getReady": "استعد...",
+  "capitals.whatCapital": "ما عاصمة",
+  "capitals.whatCountry": "أي دولة عاصمتها",
+  "capitals.typeCapital": "اكتب العاصمة...",
+  "capitals.typeCountry": "اكتب اسم الدولة...",
+  "capitals.diffMixed": "في الاتجاهين",
+  "capitals.diffOneWay": "عاصمة → دولة",
 };

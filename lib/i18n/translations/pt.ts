@@ -18,7 +18,7 @@ export const pt: Translations = {
   "home.flagsTitle": "Sprint de Bandeiras",
   "home.flagsDesc": "60 segundos. Nomeie o máximo de bandeiras. Multiplicadores por sequência.",
   "home.capitalsTitle": "Duelo de Capitais",
-  "home.capitalsDesc": "Mesma pergunta para todos. Resposta correta mais rápida vence.",
+  "home.capitalsDesc": "Nomeie capitais de países e países de capitais. Nos dois sentidos, sob pressão.",
 
   "difficulty.easy": "Fácil",
   "difficulty.easyDesc": "2-3 países de distância",
@@ -104,4 +104,17 @@ export const pt: Translations = {
   "flags.bestStreak": "Melhor sequência",
   "flags.accuracy": "Precisão",
   "flags.answers": "Respostas",
+
+  "flags.diffCountries": "países de distância",
+  "flags.diffRounds": "rodadas",
+  "flags.diffEach": "cada",
+  "flags.diffWrong": "erro =",
+
+  "capitals.getReady": "Prepare-se...",
+  "capitals.whatCapital": "Qual é a capital de",
+  "capitals.whatCountry": "De que país é a capital",
+  "capitals.typeCapital": "Digite a capital...",
+  "capitals.typeCountry": "Digite o país...",
+  "capitals.diffMixed": "nos dois sentidos",
+  "capitals.diffOneWay": "capital → país",
 };

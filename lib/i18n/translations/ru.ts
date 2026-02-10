@@ -18,7 +18,7 @@ export const ru: Translations = {
   "home.flagsTitle": "Спринт Флагов",
   "home.flagsDesc": "60 секунд. Назовите как можно больше флагов. Бонусы за серии.",
   "home.capitalsTitle": "Битва Столиц",
-  "home.capitalsDesc": "Один вопрос для всех. Самый быстрый правильный ответ побеждает.",
+  "home.capitalsDesc": "Назовите столицы стран и страны по столицам. В обоих направлениях, на время.",
 
   "difficulty.easy": "Легко",
   "difficulty.easyDesc": "2-3 страны расстояние",
@@ -104,4 +104,17 @@ export const ru: Translations = {
   "flags.bestStreak": "Лучшая серия",
   "flags.accuracy": "Точность",
   "flags.answers": "Ответы",
+
+  "flags.diffCountries": "стран между",
+  "flags.diffRounds": "раундов",
+  "flags.diffEach": "каждый",
+  "flags.diffWrong": "ошибка =",
+
+  "capitals.getReady": "Приготовьтесь...",
+  "capitals.whatCapital": "Какая столица у",
+  "capitals.whatCountry": "Какой стране принадлежит столица",
+  "capitals.typeCapital": "Введите столицу...",
+  "capitals.typeCountry": "Введите страну...",
+  "capitals.diffMixed": "в обоих направлениях",
+  "capitals.diffOneWay": "столица → страна",
 };

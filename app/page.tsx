@@ -5,7 +5,13 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { GameCard } from "@/components/ui/GameCard";
 import type { Continent, Difficulty } from "@/lib/game-engine/types";
-import { CONTINENTS, DIFFICULTY_CONFIGS } from "@/lib/game-engine/types";
+import {
+  CONTINENTS,
+  DIFFICULTY_CONFIGS,
+  SILHOUETTE_CONFIGS,
+  FLAG_SPRINT_CONFIGS,
+  CAPITAL_CLASH_CONFIGS,
+} from "@/lib/game-engine/types";
 import { useTranslation } from "@/lib/i18n/context";
 import { LOCALES } from "@/lib/i18n/types";
 import type { Locale, Translations } from "@/lib/i18n/types";
@@ -40,6 +46,12 @@ export default function HomePage() {
     router.push(`${path}?${params.toString()}`);
   };
 
+  // Per-game difficulty context
+  const connectCfg = DIFFICULTY_CONFIGS[selectedDifficulty];
+  const silhouetteCfg = SILHOUETTE_CONFIGS[selectedDifficulty];
+  const flagsCfg = FLAG_SPRINT_CONFIGS[selectedDifficulty];
+  const capitalsCfg = CAPITAL_CLASH_CONFIGS[selectedDifficulty];
+
   const gameModes = [
     {
       id: "connect",
@@ -49,6 +61,7 @@ export default function HomePage() {
       accentColor: "#3b82f6",
       available: true,
       path: "/games/connect",
+      difficultyInfo: `${connectCfg.minPathLength}-${connectCfg.maxPathLength} ${t("flags.diffCountries")} · ${connectCfg.executionTime}s`,
     },
     {
       id: "silhouette",
@@ -58,6 +71,7 @@ export default function HomePage() {
       accentColor: "#a855f7",
       available: true,
       path: "/games/silhouette",
+      difficultyInfo: `${silhouetteCfg.totalRounds} ${t("flags.diffRounds")} · ${silhouetteCfg.roundTime}s ${t("flags.diffEach")}`,
     },
     {
       id: "flags",
@@ -67,6 +81,7 @@ export default function HomePage() {
       accentColor: "#22c55e",
       available: true,
       path: "/games/flags",
+      difficultyInfo: `${flagsCfg.totalTime}s${flagsCfg.wrongPenalty > 0 ? ` · ${t("flags.diffWrong")} -${flagsCfg.wrongPenalty} pts` : ""}`,
     },
     {
       id: "capitals",
@@ -74,8 +89,9 @@ export default function HomePage() {
       description: t("home.capitalsDesc"),
       icon: "⚡",
       accentColor: "#f59e0b",
-      available: false,
+      available: true,
       path: "/games/capitals",
+      difficultyInfo: `${capitalsCfg.totalTime}s · ${capitalsCfg.mixDirections ? t("capitals.diffMixed") : t("capitals.diffOneWay")}${capitalsCfg.wrongPenalty > 0 ? ` · ${t("flags.diffWrong")} -${capitalsCfg.wrongPenalty}` : ""}`,
     },
   ];
 
@@ -132,16 +148,13 @@ export default function HomePage() {
               <button
                 key={diff}
                 onClick={() => setSelectedDifficulty(diff)}
-                className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${
                   isSelected
                     ? "bg-[#3b82f6] text-white shadow-lg shadow-[#3b82f6]/20"
                     : "text-[#94a3b8] hover:text-[#f1f5f9]"
                 }`}
               >
-                <div>{t(difficultyKeys[diff].label)}</div>
-                <div className={`text-xs mt-0.5 ${isSelected ? "text-blue-200" : "text-[#64748b]"}`}>
-                  {t(difficultyKeys[diff].desc)}
-                </div>
+                {t(difficultyKeys[diff].label)}
               </button>
             );
           })}
@@ -192,6 +205,7 @@ export default function HomePage() {
                 icon={mode.icon}
                 accentColor={mode.accentColor}
                 available={mode.available}
+                difficultyInfo={"difficultyInfo" in mode ? (mode as { difficultyInfo: string }).difficultyInfo : undefined}
                 onClick={() => handleGameSelect(mode.path)}
               />
             </motion.div>

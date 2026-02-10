@@ -135,4 +135,19 @@ export interface Translations {
   "flags.bestStreak": string;
   "flags.accuracy": string;
   "flags.answers": string;
+
+  // ─── Difficulty Info (on game cards) ───
+  "flags.diffCountries": string;
+  "flags.diffRounds": string;
+  "flags.diffEach": string;
+  "flags.diffWrong": string;
+
+  // ─── Capital Clash Game ───
+  "capitals.getReady": string;
+  "capitals.whatCapital": string;
+  "capitals.whatCountry": string;
+  "capitals.typeCapital": string;
+  "capitals.typeCountry": string;
+  "capitals.diffMixed": string;
+  "capitals.diffOneWay": string;
 }

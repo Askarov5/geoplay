@@ -20,7 +20,7 @@ export const en: Translations = {
   "home.flagsTitle": "Flag Sprint",
   "home.flagsDesc": "60 seconds. Name as many flags as you can. Streak multipliers for bonus points.",
   "home.capitalsTitle": "Capital Clash",
-  "home.capitalsDesc": "Same question for all players. Fastest correct answer wins the round.",
+  "home.capitalsDesc": "Name capitals from countries and countries from capitals. Both ways, under pressure.",
 
   // Difficulty
   "difficulty.easy": "Easy",
@@ -116,4 +116,19 @@ export const en: Translations = {
   "flags.bestStreak": "Best Streak",
   "flags.accuracy": "Accuracy",
   "flags.answers": "Answers",
+
+  // Difficulty info
+  "flags.diffCountries": "countries apart",
+  "flags.diffRounds": "rounds",
+  "flags.diffEach": "each",
+  "flags.diffWrong": "wrong =",
+
+  // Capital Clash
+  "capitals.getReady": "Get ready...",
+  "capitals.whatCapital": "What is the capital of",
+  "capitals.whatCountry": "Which country has the capital",
+  "capitals.typeCapital": "Type the capital...",
+  "capitals.typeCountry": "Type the country...",
+  "capitals.diffMixed": "both ways",
+  "capitals.diffOneWay": "capital → country",
 };

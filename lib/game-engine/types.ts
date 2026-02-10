@@ -237,3 +237,80 @@ export const FLAG_SPRINT_CONFIGS: Record<Difficulty, FlagSprintDifficultyConfig>
     skipPenalty: 5,
   },
 };
+
+// ─────────────────────────────────────────────
+// Capital Clash Game
+// ─────────────────────────────────────────────
+
+/** Question direction in Capital Clash */
+export type CapitalQuestionType = "countryToCapital" | "capitalToCountry";
+
+/** A single question in Capital Clash */
+export interface CapitalQuestion {
+  countryCode: string;
+  countryName: string;
+  capital: string;
+  type: CapitalQuestionType;
+}
+
+/** A single attempt in Capital Clash */
+export interface CapitalAttempt {
+  question: CapitalQuestion;
+  answer: string;
+  correct: boolean;
+  timeMs: number;
+}
+
+/** Full state of a Capital Clash game */
+export interface CapitalClashGameState {
+  phase: "countdown" | "playing" | "resolution";
+  difficulty: Difficulty;
+  continent: Continent;
+  questions: CapitalQuestion[];
+  currentIndex: number;
+  attempts: CapitalAttempt[];
+  score: number;
+  streak: number;
+  bestStreak: number;
+  timeLeft: number;
+  totalDuration: number;
+  countdownLeft: number;
+  questionShownAt: number;
+}
+
+/** Capital Clash difficulty config */
+export interface CapitalClashDifficultyConfig {
+  totalTime: number;
+  basePoints: number;
+  streakMultiplierStep: number;
+  maxMultiplier: number;
+  wrongPenalty: number;
+  mixDirections: boolean;  // false = capital→country only (easy), true = mixed
+}
+
+export const CAPITAL_CLASH_CONFIGS: Record<Difficulty, CapitalClashDifficultyConfig> = {
+  easy: {
+    totalTime: 90,
+    basePoints: 10,
+    streakMultiplierStep: 3,
+    maxMultiplier: 3,
+    wrongPenalty: 0,
+    mixDirections: false,
+  },
+  medium: {
+    totalTime: 60,
+    basePoints: 10,
+    streakMultiplierStep: 3,
+    maxMultiplier: 4,
+    wrongPenalty: 5,
+    mixDirections: true,
+  },
+  hard: {
+    totalTime: 45,
+    basePoints: 10,
+    streakMultiplierStep: 5,
+    maxMultiplier: 5,
+    wrongPenalty: 10,
+    mixDirections: true,
+  },
+};

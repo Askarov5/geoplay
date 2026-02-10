@@ -18,7 +18,7 @@ export const es: Translations = {
   "home.flagsTitle": "Sprint de Banderas",
   "home.flagsDesc": "60 segundos. Nombra tantas banderas como puedas. Multiplicadores por rachas.",
   "home.capitalsTitle": "Duelo de Capitales",
-  "home.capitalsDesc": "Misma pregunta para todos. La respuesta correcta más rápida gana.",
+  "home.capitalsDesc": "Nombra capitales de países y países de capitales. En ambas direcciones, bajo presión.",
 
   "difficulty.easy": "Fácil",
   "difficulty.easyDesc": "2-3 países de distancia",
@@ -104,4 +104,17 @@ export const es: Translations = {
   "flags.bestStreak": "Mejor racha",
   "flags.accuracy": "Precisión",
   "flags.answers": "Respuestas",
+
+  "flags.diffCountries": "países de distancia",
+  "flags.diffRounds": "rondas",
+  "flags.diffEach": "cada una",
+  "flags.diffWrong": "error =",
+
+  "capitals.getReady": "Prepárate...",
+  "capitals.whatCapital": "¿Cuál es la capital de",
+  "capitals.whatCountry": "¿De qué país es la capital",
+  "capitals.typeCapital": "Escribe la capital...",
+  "capitals.typeCountry": "Escribe el país...",
+  "capitals.diffMixed": "ambas direcciones",
+  "capitals.diffOneWay": "capital → país",
 };

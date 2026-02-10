@@ -9,6 +9,7 @@ interface GameCardProps {
   icon: React.ReactNode;
   accentColor: string;
   available: boolean;
+  difficultyInfo?: string;
   onClick?: () => void;
 }
 
@@ -18,6 +19,7 @@ export function GameCard({
   icon,
   accentColor,
   available,
+  difficultyInfo,
   onClick,
 }: GameCardProps) {
   const { t } = useTranslation();
@@ -61,6 +63,17 @@ export function GameCard({
             )}
           </div>
           <p className="text-sm text-[#94a3b8] mt-1 leading-relaxed">{description}</p>
+          {difficultyInfo && available && (
+            <div
+              className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-lg"
+              style={{ backgroundColor: `${accentColor}15`, color: accentColor }}
+            >
+              <svg className="w-3.5 h-3.5 shrink-0 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              {difficultyInfo}
+            </div>
+          )}
         </div>
 
         {available && (

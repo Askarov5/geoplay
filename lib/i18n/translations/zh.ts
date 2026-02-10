@@ -18,7 +18,7 @@ export const zh: Translations = {
   "home.flagsTitle": "国旗冲刺",
   "home.flagsDesc": "60秒。尽可能多地识别国旗。连续答对有加成。",
   "home.capitalsTitle": "首都对决",
-  "home.capitalsDesc": "所有玩家同一题目。最快正确回答者获胜。",
+  "home.capitalsDesc": "说出国家的首都，或说出首都所在的国家。双向挑战，限时作答。",
 
   "difficulty.easy": "简单",
   "difficulty.easyDesc": "相隔2-3个国家",
@@ -104,4 +104,17 @@ export const zh: Translations = {
   "flags.bestStreak": "最长连续",
   "flags.accuracy": "准确率",
   "flags.answers": "答题记录",
+
+  "flags.diffCountries": "个国家之间",
+  "flags.diffRounds": "轮",
+  "flags.diffEach": "每轮",
+  "flags.diffWrong": "错误 =",
+
+  "capitals.getReady": "准备好...",
+  "capitals.whatCapital": "以下国家的首都是",
+  "capitals.whatCountry": "以下首都属于哪个国家",
+  "capitals.typeCapital": "输入首都名称...",
+  "capitals.typeCountry": "输入国家名称...",
+  "capitals.diffMixed": "双向",
+  "capitals.diffOneWay": "首都 → 国家",
 };

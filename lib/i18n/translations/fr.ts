@@ -18,7 +18,7 @@ export const fr: Translations = {
   "home.flagsTitle": "Sprint Drapeaux",
   "home.flagsDesc": "60 secondes. Nommez autant de drapeaux que possible. Multiplicateurs de série.",
   "home.capitalsTitle": "Duel de Capitales",
-  "home.capitalsDesc": "Même question pour tous. La réponse correcte la plus rapide gagne.",
+  "home.capitalsDesc": "Nommez les capitales des pays et les pays des capitales. Dans les deux sens, sous pression.",
 
   "difficulty.easy": "Facile",
   "difficulty.easyDesc": "2-3 pays d'écart",
@@ -104,4 +104,17 @@ export const fr: Translations = {
   "flags.bestStreak": "Meilleure série",
   "flags.accuracy": "Précision",
   "flags.answers": "Réponses",
+
+  "flags.diffCountries": "pays de distance",
+  "flags.diffRounds": "manches",
+  "flags.diffEach": "chacune",
+  "flags.diffWrong": "erreur =",
+
+  "capitals.getReady": "Préparez-vous...",
+  "capitals.whatCapital": "Quelle est la capitale de",
+  "capitals.whatCountry": "De quel pays est la capitale",
+  "capitals.typeCapital": "Tapez la capitale...",
+  "capitals.typeCountry": "Tapez le pays...",
+  "capitals.diffMixed": "les deux sens",
+  "capitals.diffOneWay": "capitale → pays",
 };
