@@ -252,8 +252,22 @@ export function resolveCountryCode(input: string, locale?: string): string | nul
   return null;
 }
 
-/** Get all unique capital names for autocomplete. */
-export function getAllCapitalNames(): string[] {
+/** Get all unique capital names for autocomplete.
+ *  When a locale is provided, returns localized capital names.
+ */
+export function getAllCapitalNames(locale?: string): string[] {
+  if (locale && locale !== "en") {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { capitalNames } = require("@/lib/i18n/capitals");
+      const localeNames: Record<string, string> | undefined = capitalNames[locale];
+      if (localeNames) {
+        return [...new Set(countries.map((c) => localeNames[c.code] || c.capital))].sort();
+      }
+    } catch {
+      // fallback to English
+    }
+  }
   return [...new Set(countries.map((c) => c.capital))].sort();
 }
 

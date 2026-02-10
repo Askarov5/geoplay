@@ -17,6 +17,7 @@ interface PhaseExecutionProps {
   onSkip: () => void;
   onExecutionTick: () => void;
   onMoveTick: () => void;
+  onGoHome: () => void;
 }
 
 export function PhaseExecution({
@@ -28,6 +29,7 @@ export function PhaseExecution({
   onSkip,
   onExecutionTick,
   onMoveTick,
+  onGoHome,
 }: PhaseExecutionProps) {
   const { t, countryName } = useTranslation();
   const startName = countryName(gameState.startCountry);
@@ -44,6 +46,14 @@ export function PhaseExecution({
         transition={{ duration: 0.3 }}
       >
         <div className="flex items-center gap-2 text-sm">
+          <button
+            onClick={onGoHome}
+            className="text-[#94a3b8] hover:text-[#f1f5f9] transition-colors mr-1"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
           <span className="text-[#22c55e] font-semibold">{startName}</span>
           <span className="text-[#94a3b8]">→</span>
           <span className="text-[#ef4444] font-semibold">{endName}</span>

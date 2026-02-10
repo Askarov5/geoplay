@@ -23,7 +23,7 @@ interface CapitalClashGameProps {
 }
 
 export function CapitalClashGame({ difficulty, continent, onGoHome }: CapitalClashGameProps) {
-  const { t, countryName, locale } = useTranslation();
+  const { t, countryName, capitalName, locale } = useTranslation();
   const [gameState, setGameState] = useState<CapitalClashGameState | null>(null);
   const [feedbackState, setFeedbackState] = useState<"correct" | "wrong" | null>(null);
   const [lastAnswer, setLastAnswer] = useState<{ text: string; correct: boolean } | null>(null);
@@ -34,11 +34,12 @@ export function CapitalClashGame({ difficulty, continent, onGoHome }: CapitalCla
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const allCountryNamesList = useRef<string[]>(getAllCountryNames(locale));
-  const allCapitalNamesList = useRef<string[]>(getAllCapitalNames());
+  const allCapitalNamesList = useRef<string[]>(getAllCapitalNames(locale));
 
   // Update names on locale change
   useEffect(() => {
     allCountryNamesList.current = getAllCountryNames(locale);
+    allCapitalNamesList.current = getAllCapitalNames(locale);
   }, [locale]);
 
   // Create game on mount
@@ -133,7 +134,7 @@ export function CapitalClashGame({ difficulty, continent, onGoHome }: CapitalCla
       if (!toSubmit.trim() || !gameState || gameState.phase !== "playing") return;
 
       const question = gameState.questions[gameState.currentIndex];
-      const display = getQuestionDisplay(question, countryName);
+      const display = getQuestionDisplay(question, countryName, capitalName);
       const result = submitCapitalGuess(gameState, toSubmit.trim(), locale);
 
       if (result.result === "correct") {
@@ -161,7 +162,7 @@ export function CapitalClashGame({ difficulty, continent, onGoHome }: CapitalCla
   const handleSkip = useCallback(() => {
     if (!gameState || gameState.phase !== "playing") return;
     const question = gameState.questions[gameState.currentIndex];
-    const display = getQuestionDisplay(question, countryName);
+    const display = getQuestionDisplay(question, countryName, capitalName);
     setLastAnswer({ text: display.answer, correct: false });
     setGameState(skipQuestion(gameState));
     setInputValue("");
@@ -314,7 +315,7 @@ export function CapitalClashGame({ difficulty, continent, onGoHome }: CapitalCla
               </div>
               <div className="space-y-1 max-h-40 overflow-y-auto">
                 {gameState.attempts.map((attempt, i) => {
-                  const display = getQuestionDisplay(attempt.question, countryName);
+                  const display = getQuestionDisplay(attempt.question, countryName, capitalName);
                   return (
                     <div
                       key={i}
@@ -369,7 +370,7 @@ export function CapitalClashGame({ difficulty, continent, onGoHome }: CapitalCla
 
   // ─── Playing ───
   const question = gameState.questions[gameState.currentIndex];
-  const display = getQuestionDisplay(question, countryName);
+  const display = getQuestionDisplay(question, countryName, capitalName);
   const multiplier = getMultiplier(gameState);
   const timerPct = (gameState.timeLeft / gameState.totalDuration) * 100;
   const isCountryToCapital = question.type === "countryToCapital";

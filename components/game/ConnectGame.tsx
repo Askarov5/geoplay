@@ -173,6 +173,7 @@ export function ConnectGame({ difficulty, continent, onGoHome }: ConnectGameProp
             endCountry={gameState.endCountry}
             timeLeft={gameState.revealTimeLeft}
             difficulty={gameState.difficulty}
+            onGoHome={onGoHome}
           />
         )}
       </AnimatePresence>
@@ -187,6 +188,7 @@ export function ConnectGame({ difficulty, continent, onGoHome }: ConnectGameProp
           onSkip={handleSkip}
           onExecutionTick={handleExecutionTick}
           onMoveTick={handleMoveTick}
+          onGoHome={onGoHome}
         />
       )}
 

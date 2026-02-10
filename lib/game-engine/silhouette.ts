@@ -42,16 +42,13 @@ function buildHints(code: string): SilhouetteHint[] {
   // Hint 2: First letter of English name
   hints.push({ type: "firstLetter", value: country.name[0].toUpperCase() });
 
-  // Hint 3: Capital
-  hints.push({ type: "capital", value: country.capital });
+  // Hint 3: Capital (store country code so UI can localize)
+  hints.push({ type: "capital", value: code });
 
-  // Hint 4: Neighboring countries (up to 3)
+  // Hint 4: Neighboring countries (up to 3, store codes so UI can localize)
   const neighbors = adjacencyGraph[code] || [];
   if (neighbors.length > 0) {
-    const shown = neighbors
-      .slice(0, 3)
-      .map((n) => countryByCode[n]?.name || n)
-      .join(", ");
+    const shown = neighbors.slice(0, 3).join(",");
     hints.push({ type: "neighbors", value: shown });
   }
 

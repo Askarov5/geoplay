@@ -117,6 +117,33 @@ function normalize(s: string): string {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
+/** Resolve a capital name to a country code, checking localized capital names. */
+function resolveCapitalCode(input: string, locale?: string): string | null {
+  const normalized = normalize(input);
+  // Check English capitals first
+  for (const c of countries) {
+    if (normalize(c.capital) === normalized) return c.code;
+    // Partial match for long capitals like "Washington, D.C."
+    if (normalize(c.capital).includes(normalized) && normalized.length >= 4) return c.code;
+  }
+  // Check localized capitals
+  if (locale) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { capitalNames } = require("@/lib/i18n/capitals");
+      const localeNames: Record<string, string> | undefined = capitalNames[locale];
+      if (localeNames) {
+        for (const [code, name] of Object.entries(localeNames)) {
+          if (normalize(name) === normalized) return code;
+        }
+      }
+    } catch {
+      // i18n not available — fall through
+    }
+  }
+  return null;
+}
+
 /** Check if input matches the expected answer (capital or country name) */
 function isCorrectAnswer(
   question: CapitalQuestion,
@@ -127,6 +154,7 @@ function isCorrectAnswer(
 
   if (question.type === "countryToCapital") {
     // Player must type the capital
+    // Check English capital name
     if (normalize(question.capital) === normalized) return true;
     // Accept partial match for long capitals like "Washington, D.C."
     if (
@@ -134,6 +162,9 @@ function isCorrectAnswer(
       normalized.length >= 4
     )
       return true;
+    // Check localized capital: resolve the input to a country code and compare
+    const resolvedCode = resolveCapitalCode(input, locale);
+    if (resolvedCode === question.countryCode) return true;
     return false;
   } else {
     // Player must type the country name
@@ -265,22 +296,25 @@ export function getCapitalClashStats(state: CapitalClashGameState) {
 /** Get the display text for a question */
 export function getQuestionDisplay(
   question: CapitalQuestion,
-  countryNameFn?: (code: string) => string
+  countryNameFn?: (code: string) => string,
+  capitalNameFn?: (code: string) => string
 ): { prompt: string; answer: string } {
+  const localizedCapital = capitalNameFn
+    ? capitalNameFn(question.countryCode)
+    : question.capital;
+  const localizedCountry = countryNameFn
+    ? countryNameFn(question.countryCode)
+    : question.countryName;
+
   if (question.type === "countryToCapital") {
-    const name = countryNameFn
-      ? countryNameFn(question.countryCode)
-      : question.countryName;
     return {
-      prompt: name,
-      answer: question.capital,
+      prompt: localizedCountry,
+      answer: localizedCapital,
     };
   } else {
     return {
-      prompt: question.capital,
-      answer: countryNameFn
-        ? countryNameFn(question.countryCode)
-        : question.countryName,
+      prompt: localizedCapital,
+      answer: localizedCountry,
     };
   }
 }

@@ -5,12 +5,14 @@ import type { Locale, Translations } from "./types";
 import { DEFAULT_LOCALE } from "./types";
 import { translations } from "./translations";
 import { countryNames } from "./countries";
+import { capitalNames } from "./capitals";
 
 interface LocaleContextValue {
   locale: Locale;
   setLocale: (locale: Locale) => void;
   t: (key: keyof Translations) => string;
   countryName: (code: string) => string;
+  capitalName: (code: string) => string;
 }
 
 const LocaleContext = createContext<LocaleContextValue | null>(null);
@@ -55,9 +57,16 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     [locale]
   );
 
+  const capitalName = useCallback(
+    (code: string): string => {
+      return capitalNames[locale]?.[code] ?? capitalNames.en?.[code] ?? code;
+    },
+    [locale]
+  );
+
   const value = useMemo(
-    () => ({ locale, setLocale, t, countryName }),
-    [locale, setLocale, t, countryName]
+    () => ({ locale, setLocale, t, countryName, capitalName }),
+    [locale, setLocale, t, countryName, capitalName]
   );
 
   return (

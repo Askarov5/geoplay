@@ -31,7 +31,7 @@ const hintTypeLabels: Record<string, keyof Translations> = {
 };
 
 export function SilhouetteGame({ difficulty, continent, onGoHome }: SilhouetteGameProps) {
-  const { t, countryName, locale } = useTranslation();
+  const { t, countryName, capitalName, locale } = useTranslation();
   const [gameState, setGameState] = useState<SilhouetteGameState | null>(null);
   const [feedbackState, setFeedbackState] = useState<"correct" | "wrong" | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -360,7 +360,13 @@ export function SilhouetteGame({ difficulty, continent, onGoHome }: SilhouetteGa
                   transition={{ delay: i * 0.1 }}
                 >
                   <span className="opacity-70">{t(hintTypeLabels[hint.type])}: </span>
-                  <span className="font-semibold">{hint.value}</span>
+                  <span className="font-semibold">
+                    {hint.type === "capital"
+                      ? capitalName(hint.value)
+                      : hint.type === "neighbors"
+                        ? hint.value.split(",").map((c) => countryName(c)).join(", ")
+                        : hint.value}
+                  </span>
                 </motion.div>
               ))}
             </motion.div>
