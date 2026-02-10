@@ -19,6 +19,8 @@ export const ru: Translations = {
   "home.flagsDesc": "60 секунд. Назовите как можно больше флагов. Бонусы за серии.",
   "home.capitalsTitle": "Битва Столиц",
   "home.capitalsDesc": "Назовите столицы стран и страны по столицам. В обоих направлениях, на время.",
+  "home.borderBlitzTitle": "Граница Блиц",
+  "home.borderBlitzDesc": "Показываем страну. Введи всех её соседей. Каждый верный ответ открывает силуэт.",
 
   "difficulty.easy": "Легко",
   "difficulty.easyDesc": "2-3 страны расстояние",
@@ -117,4 +119,19 @@ export const ru: Translations = {
   "capitals.typeCountry": "Введите страну...",
   "capitals.diffMixed": "в обоих направлениях",
   "capitals.diffOneWay": "столица → страна",
+
+  "borderBlitz.title": "Граница Блиц",
+  "borderBlitz.getReady": "Готовься!",
+  "borderBlitz.findNeighborsOf": "Найди всех соседей",
+  "borderBlitz.revealed": "Открыто",
+  "borderBlitz.neighborsFound": "соседей найдено",
+  "borderBlitz.allFound": "Все соседи найдены!",
+  "borderBlitz.placeholder": "Введите страну...",
+  "borderBlitz.hintRevealed": "Подсказка:",
+  "borderBlitz.hintTooltip": "Раскрыть одного соседа (штраф)",
+  "borderBlitz.skipTooltip": "Перейти к другой стране",
+  "borderBlitz.skipLocked": "Пропуск доступен после 2 ошибок подряд",
+  "borderBlitz.hintsLabel": "Подсказки",
+  "borderBlitz.skipsLabel": "Пропуски",
+  "borderBlitz.neighborsLabel": "соседей",
 };

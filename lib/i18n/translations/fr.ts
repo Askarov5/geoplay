@@ -19,6 +19,8 @@ export const fr: Translations = {
   "home.flagsDesc": "60 secondes. Nommez autant de drapeaux que possible. Multiplicateurs de série.",
   "home.capitalsTitle": "Duel de Capitales",
   "home.capitalsDesc": "Nommez les capitales des pays et les pays des capitales. Dans les deux sens, sous pression.",
+  "home.borderBlitzTitle": "Border Blitz",
+  "home.borderBlitzDesc": "Voici un pays. Saisis tous ses voisins. Chaque bonne réponse révèle une silhouette.",
 
   "difficulty.easy": "Facile",
   "difficulty.easyDesc": "2-3 pays d'écart",
@@ -117,4 +119,19 @@ export const fr: Translations = {
   "capitals.typeCountry": "Tapez le pays...",
   "capitals.diffMixed": "les deux sens",
   "capitals.diffOneWay": "capitale → pays",
+
+  "borderBlitz.title": "Border Blitz",
+  "borderBlitz.getReady": "Prêt !",
+  "borderBlitz.findNeighborsOf": "Trouve tous les voisins de",
+  "borderBlitz.revealed": "Révélés",
+  "borderBlitz.neighborsFound": "voisins trouvés",
+  "borderBlitz.allFound": "Tous les voisins trouvés !",
+  "borderBlitz.placeholder": "Saisis un pays...",
+  "borderBlitz.hintRevealed": "Indice révélé :",
+  "borderBlitz.hintTooltip": "Révéler un voisin (pénalité)",
+  "borderBlitz.skipTooltip": "Passer à un autre pays",
+  "borderBlitz.skipLocked": "Le saut se débloque après 2 erreurs consécutives",
+  "borderBlitz.hintsLabel": "Indices",
+  "borderBlitz.skipsLabel": "Sauts",
+  "borderBlitz.neighborsLabel": "voisins",
 };

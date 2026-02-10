@@ -19,6 +19,8 @@ export const ar: Translations = {
   "home.flagsDesc": "60 ثانية. سمِّ أكبر عدد من الأعلام. مضاعفات للإجابات المتتالية.",
   "home.capitalsTitle": "تحدي العواصم",
   "home.capitalsDesc": "اذكر عواصم الدول والدول من عواصمها. في الاتجاهين، تحت الضغط.",
+  "home.borderBlitzTitle": "حدود البرق",
+  "home.borderBlitzDesc": "شاهد دولة. اكتب كل جيرانها. كل إجابة صحيحة تكشف شكلاً.",
 
   "difficulty.easy": "سهل",
   "difficulty.easyDesc": "2-3 دول مسافة",
@@ -117,4 +119,19 @@ export const ar: Translations = {
   "capitals.typeCountry": "اكتب اسم الدولة...",
   "capitals.diffMixed": "في الاتجاهين",
   "capitals.diffOneWay": "عاصمة → دولة",
+
+  "borderBlitz.title": "حدود البرق",
+  "borderBlitz.getReady": "استعد!",
+  "borderBlitz.findNeighborsOf": "اعثر على كل جيران",
+  "borderBlitz.revealed": "مكشوف",
+  "borderBlitz.neighborsFound": "جيران تم العثور عليهم",
+  "borderBlitz.allFound": "تم العثور على كل الجيران!",
+  "borderBlitz.placeholder": "اكتب اسم دولة...",
+  "borderBlitz.hintRevealed": "تلميح مكشوف:",
+  "borderBlitz.hintTooltip": "اكشف جاراً واحداً (خصم)",
+  "borderBlitz.skipTooltip": "انتقل لدولة أخرى",
+  "borderBlitz.skipLocked": "التخطي متاح بعد خطأين متتاليين",
+  "borderBlitz.hintsLabel": "تلميحات",
+  "borderBlitz.skipsLabel": "تخطي",
+  "borderBlitz.neighborsLabel": "جيران",
 };

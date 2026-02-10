@@ -19,6 +19,8 @@ export const pt: Translations = {
   "home.flagsDesc": "60 segundos. Nomeie o máximo de bandeiras. Multiplicadores por sequência.",
   "home.capitalsTitle": "Duelo de Capitais",
   "home.capitalsDesc": "Nomeie capitais de países e países de capitais. Nos dois sentidos, sob pressão.",
+  "home.borderBlitzTitle": "Border Blitz",
+  "home.borderBlitzDesc": "Veja um país. Digite todos os vizinhos. Cada acerto revela uma silhueta.",
 
   "difficulty.easy": "Fácil",
   "difficulty.easyDesc": "2-3 países de distância",
@@ -117,4 +119,19 @@ export const pt: Translations = {
   "capitals.typeCountry": "Digite o país...",
   "capitals.diffMixed": "nos dois sentidos",
   "capitals.diffOneWay": "capital → país",
+
+  "borderBlitz.title": "Border Blitz",
+  "borderBlitz.getReady": "Preparado!",
+  "borderBlitz.findNeighborsOf": "Encontre todos os vizinhos de",
+  "borderBlitz.revealed": "Revelados",
+  "borderBlitz.neighborsFound": "vizinhos encontrados",
+  "borderBlitz.allFound": "Todos os vizinhos encontrados!",
+  "borderBlitz.placeholder": "Digite um país...",
+  "borderBlitz.hintRevealed": "Dica revelada:",
+  "borderBlitz.hintTooltip": "Revelar um vizinho (penalidade)",
+  "borderBlitz.skipTooltip": "Pular para outro país",
+  "borderBlitz.skipLocked": "Pular disponível após 2 erros consecutivos",
+  "borderBlitz.hintsLabel": "Dicas",
+  "borderBlitz.skipsLabel": "Pulos",
+  "borderBlitz.neighborsLabel": "vizinhos",
 };

@@ -196,7 +196,7 @@ const WorldMapInner = ({
     <div className={`relative overflow-hidden rounded-xl bg-[#0a0e1a] ${className}`}>
       <svg
         viewBox="0 0 960 600"
-        className="w-full h-auto"
+        className="w-full h-auto pt-20"
         style={{ maxHeight: "70vh" }}
       >
         {/* Ocean background */}

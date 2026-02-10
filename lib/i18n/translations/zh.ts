@@ -19,6 +19,8 @@ export const zh: Translations = {
   "home.flagsDesc": "60秒。尽可能多地识别国旗。连续答对有加成。",
   "home.capitalsTitle": "首都对决",
   "home.capitalsDesc": "说出国家的首都，或说出首都所在的国家。双向挑战，限时作答。",
+  "home.borderBlitzTitle": "边境闪电",
+  "home.borderBlitzDesc": "看国家轮廓与名称，输入其所有邻国。每答对一个即显示该国轮廓。",
 
   "difficulty.easy": "简单",
   "difficulty.easyDesc": "相隔2-3个国家",
@@ -117,4 +119,19 @@ export const zh: Translations = {
   "capitals.typeCountry": "输入国家名称...",
   "capitals.diffMixed": "双向",
   "capitals.diffOneWay": "首都 → 国家",
+
+  "borderBlitz.title": "边境闪电",
+  "borderBlitz.getReady": "准备！",
+  "borderBlitz.findNeighborsOf": "找出以下国家的所有邻国",
+  "borderBlitz.revealed": "已揭示",
+  "borderBlitz.neighborsFound": "个邻国已找到",
+  "borderBlitz.allFound": "全部邻国已找到！",
+  "borderBlitz.placeholder": "输入国家名称…",
+  "borderBlitz.hintRevealed": "提示揭示：",
+  "borderBlitz.hintTooltip": "揭示一个邻国（扣分）",
+  "borderBlitz.skipTooltip": "跳到另一个国家",
+  "borderBlitz.skipLocked": "连续答错2次后解锁跳过",
+  "borderBlitz.hintsLabel": "提示",
+  "borderBlitz.skipsLabel": "跳过",
+  "borderBlitz.neighborsLabel": "个邻国",
 };

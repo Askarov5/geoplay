@@ -11,6 +11,7 @@ import {
   SILHOUETTE_CONFIGS,
   FLAG_SPRINT_CONFIGS,
   CAPITAL_CLASH_CONFIGS,
+  BORDER_BLITZ_CONFIGS,
 } from "@/lib/game-engine/types";
 import { useTranslation } from "@/lib/i18n/context";
 import { LOCALES } from "@/lib/i18n/types";
@@ -51,6 +52,7 @@ export default function HomePage() {
   const silhouetteCfg = SILHOUETTE_CONFIGS[selectedDifficulty];
   const flagsCfg = FLAG_SPRINT_CONFIGS[selectedDifficulty];
   const capitalsCfg = CAPITAL_CLASH_CONFIGS[selectedDifficulty];
+  const borderBlitzCfg = BORDER_BLITZ_CONFIGS[selectedDifficulty];
 
   const gameModes = [
     {
@@ -92,6 +94,16 @@ export default function HomePage() {
       available: true,
       path: "/games/capitals",
       difficultyInfo: `${capitalsCfg.totalTime}s · ${capitalsCfg.mixDirections ? t("capitals.diffMixed") : t("capitals.diffOneWay")}${capitalsCfg.wrongPenalty > 0 ? ` · ${t("flags.diffWrong")} -${capitalsCfg.wrongPenalty}` : ""}`,
+    },
+    {
+      id: "borderBlitz",
+      title: t("home.borderBlitzTitle"),
+      description: t("home.borderBlitzDesc"),
+      icon: "⚔️",
+      accentColor: "#8b5cf6",
+      available: true,
+      path: "/games/border-blitz",
+      difficultyInfo: `${borderBlitzCfg.minNeighbors}–${borderBlitzCfg.maxNeighbors >= 99 ? "14" : borderBlitzCfg.maxNeighbors} ${t("borderBlitz.neighborsLabel")} · ${borderBlitzCfg.totalTime}s${borderBlitzCfg.wrongPenalty > 0 ? ` · ${t("flags.diffWrong")} -${borderBlitzCfg.wrongPenalty}` : ""}`,
     },
   ];
 

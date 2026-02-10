@@ -21,6 +21,8 @@ export const en: Translations = {
   "home.flagsDesc": "60 seconds. Name as many flags as you can. Streak multipliers for bonus points.",
   "home.capitalsTitle": "Capital Clash",
   "home.capitalsDesc": "Name capitals from countries and countries from capitals. Both ways, under pressure.",
+  "home.borderBlitzTitle": "Border Blitz",
+  "home.borderBlitzDesc": "See a country. Type all its neighbors. Each correct answer reveals a silhouette.",
 
   // Difficulty
   "difficulty.easy": "Easy",
@@ -131,4 +133,19 @@ export const en: Translations = {
   "capitals.typeCountry": "Type the country...",
   "capitals.diffMixed": "both ways",
   "capitals.diffOneWay": "capital → country",
+
+  "borderBlitz.title": "Border Blitz",
+  "borderBlitz.getReady": "Get ready!",
+  "borderBlitz.findNeighborsOf": "Find all neighbors of",
+  "borderBlitz.revealed": "Revealed",
+  "borderBlitz.neighborsFound": "neighbors found",
+  "borderBlitz.allFound": "All neighbors found!",
+  "borderBlitz.placeholder": "Type a country name...",
+  "borderBlitz.hintRevealed": "Hint revealed:",
+  "borderBlitz.hintTooltip": "Reveal one neighbor (penalty)",
+  "borderBlitz.skipTooltip": "Skip to a different country",
+  "borderBlitz.skipLocked": "Skip unlocks after 2 wrong guesses in a row",
+  "borderBlitz.hintsLabel": "Hints",
+  "borderBlitz.skipsLabel": "Skips",
+  "borderBlitz.neighborsLabel": "neighbors",
 };

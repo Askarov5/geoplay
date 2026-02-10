@@ -40,6 +40,8 @@ export interface Translations {
   "home.flagsDesc": string;
   "home.capitalsTitle": string;
   "home.capitalsDesc": string;
+  "home.borderBlitzTitle": string;
+  "home.borderBlitzDesc": string;
 
   // ─── Difficulty ───
   "difficulty.easy": string;
@@ -150,4 +152,20 @@ export interface Translations {
   "capitals.typeCountry": string;
   "capitals.diffMixed": string;
   "capitals.diffOneWay": string;
+
+  // ─── Border Blitz Game ───
+  "borderBlitz.title": string;
+  "borderBlitz.getReady": string;
+  "borderBlitz.findNeighborsOf": string;
+  "borderBlitz.revealed": string;
+  "borderBlitz.neighborsFound": string;
+  "borderBlitz.allFound": string;
+  "borderBlitz.placeholder": string;
+  "borderBlitz.hintRevealed": string;
+  "borderBlitz.hintTooltip": string;
+  "borderBlitz.skipTooltip": string;
+  "borderBlitz.skipLocked": string;
+  "borderBlitz.hintsLabel": string;
+  "borderBlitz.skipsLabel": string;
+  "borderBlitz.neighborsLabel": string;
 }

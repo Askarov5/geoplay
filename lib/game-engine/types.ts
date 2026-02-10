@@ -314,3 +314,62 @@ export const CAPITAL_CLASH_CONFIGS: Record<Difficulty, CapitalClashDifficultyCon
     mixDirections: true,
   },
 };
+
+// ─────────────────────────────────────────────
+// Border Blitz Game
+// ─────────────────────────────────────────────
+
+/** Full state of a Border Blitz game */
+export interface BorderBlitzGameState {
+  phase: "countdown" | "playing" | "resolution";
+  difficulty: Difficulty;
+  continent: Continent;
+  anchorCode: string;           // country to find neighbors for
+  foundNeighbors: string[];     // country codes found so far (order found)
+  hintedNeighbors: string[];    // country codes revealed via hint
+  wrongAttempts: number;
+  consecutiveWrongAttempts: number;
+  hintsUsed: number;
+  skipsUsed: number;
+  score: number;
+  timeLeft: number;
+  totalDuration: number;
+  countdownLeft: number;
+}
+
+/** Border Blitz difficulty config */
+export interface BorderBlitzDifficultyConfig {
+  totalTime: number;        // seconds
+  pointsPerNeighbor: number;
+  wrongPenalty: number;     // points lost per wrong guess (0 = no penalty)
+  hintPenalty: number;      // points lost per hint used
+  minNeighbors: number;     // anchor must have at least this many neighbors
+  maxNeighbors: number;     // anchor must have at most this many neighbors
+}
+
+export const BORDER_BLITZ_CONFIGS: Record<Difficulty, BorderBlitzDifficultyConfig> = {
+  easy: {
+    totalTime: 90,
+    pointsPerNeighbor: 10,
+    wrongPenalty: 0,
+    hintPenalty: 3,
+    minNeighbors: 1,
+    maxNeighbors: 3,
+  },
+  medium: {
+    totalTime: 60,
+    pointsPerNeighbor: 10,
+    wrongPenalty: 2,
+    hintPenalty: 5,
+    minNeighbors: 4,
+    maxNeighbors: 6,
+  },
+  hard: {
+    totalTime: 45,
+    pointsPerNeighbor: 15,
+    wrongPenalty: 5,
+    hintPenalty: 8,
+    minNeighbors: 7,
+    maxNeighbors: 99,
+  },
+};
