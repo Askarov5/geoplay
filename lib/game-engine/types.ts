@@ -172,3 +172,68 @@ export const SILHOUETTE_CONFIGS: Record<Difficulty, SilhouetteDifficultyConfig> 
     guessPenalty: 20,
   },
 };
+
+// ─────────────────────────────────────────────
+// Flag Sprint Game
+// ─────────────────────────────────────────────
+
+/** A single answered flag in the sprint */
+export interface FlagAttempt {
+  countryCode: string;
+  correct: boolean;
+  timeMs: number;       // how long the player took
+}
+
+/** Full state of a Flag Sprint game */
+export interface FlagSprintGameState {
+  phase: "countdown" | "playing" | "resolution";
+  difficulty: Difficulty;
+  continent: Continent;
+  flagQueue: string[];        // shuffled country codes to show
+  currentIndex: number;       // index into flagQueue
+  attempts: FlagAttempt[];    // completed attempts
+  score: number;
+  streak: number;             // current consecutive correct answers
+  bestStreak: number;
+  timeLeft: number;           // seconds remaining
+  totalDuration: number;      // total game time in seconds
+  countdownLeft: number;      // 3-2-1 countdown
+  flagShownAt: number;        // timestamp when current flag was displayed
+}
+
+/** Flag Sprint difficulty config */
+export interface FlagSprintDifficultyConfig {
+  totalTime: number;           // seconds
+  basePoints: number;          // points per correct answer
+  streakMultiplierStep: number; // every N streak, multiplier goes up
+  maxMultiplier: number;
+  wrongPenalty: number;        // points lost per wrong answer
+  skipPenalty: number;         // points lost per skip
+}
+
+export const FLAG_SPRINT_CONFIGS: Record<Difficulty, FlagSprintDifficultyConfig> = {
+  easy: {
+    totalTime: 60,
+    basePoints: 10,
+    streakMultiplierStep: 3,
+    maxMultiplier: 3,
+    wrongPenalty: 0,
+    skipPenalty: 0,
+  },
+  medium: {
+    totalTime: 60,
+    basePoints: 10,
+    streakMultiplierStep: 3,
+    maxMultiplier: 4,
+    wrongPenalty: 5,
+    skipPenalty: 0,
+  },
+  hard: {
+    totalTime: 45,
+    basePoints: 10,
+    streakMultiplierStep: 5,
+    maxMultiplier: 5,
+    wrongPenalty: 10,
+    skipPenalty: 5,
+  },
+};

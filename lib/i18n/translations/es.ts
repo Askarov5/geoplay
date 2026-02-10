@@ -95,4 +95,13 @@ export const es: Translations = {
   "silhouette.hintFirstLetter": "Empieza con",
   "silhouette.hintCapital": "Capital",
   "silhouette.hintNeighbors": "Vecinos",
+
+  "flags.getReady": "Prepárate...",
+  "flags.placeholder": "Nombra esta bandera...",
+  "flags.skip": "Saltar",
+  "flags.correct": "Correctas",
+  "flags.wrong": "Incorrectas",
+  "flags.bestStreak": "Mejor racha",
+  "flags.accuracy": "Precisión",
+  "flags.answers": "Respuestas",
 };

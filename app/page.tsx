@@ -65,7 +65,7 @@ export default function HomePage() {
       description: t("home.flagsDesc"),
       icon: "🏁",
       accentColor: "#22c55e",
-      available: false,
+      available: true,
       path: "/games/flags",
     },
     {

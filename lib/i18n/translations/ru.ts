@@ -95,4 +95,13 @@ export const ru: Translations = {
   "silhouette.hintFirstLetter": "Начинается на",
   "silhouette.hintCapital": "Столица",
   "silhouette.hintNeighbors": "Соседи",
+
+  "flags.getReady": "Приготовьтесь...",
+  "flags.placeholder": "Назовите этот флаг...",
+  "flags.skip": "Пропустить",
+  "flags.correct": "Верно",
+  "flags.wrong": "Неверно",
+  "flags.bestStreak": "Лучшая серия",
+  "flags.accuracy": "Точность",
+  "flags.answers": "Ответы",
 };

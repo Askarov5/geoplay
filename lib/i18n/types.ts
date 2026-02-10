@@ -125,4 +125,14 @@ export interface Translations {
   "silhouette.hintFirstLetter": string;
   "silhouette.hintCapital": string;
   "silhouette.hintNeighbors": string;
+
+  // ─── Flag Sprint Game ───
+  "flags.getReady": string;
+  "flags.placeholder": string;
+  "flags.skip": string;
+  "flags.correct": string;
+  "flags.wrong": string;
+  "flags.bestStreak": string;
+  "flags.accuracy": string;
+  "flags.answers": string;
 }

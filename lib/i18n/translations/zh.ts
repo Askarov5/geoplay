@@ -95,4 +95,13 @@ export const zh: Translations = {
   "silhouette.hintFirstLetter": "首字母",
   "silhouette.hintCapital": "首都",
   "silhouette.hintNeighbors": "邻国",
+
+  "flags.getReady": "准备好...",
+  "flags.placeholder": "说出这面国旗的国家...",
+  "flags.skip": "跳过",
+  "flags.correct": "答对",
+  "flags.wrong": "答错/跳过",
+  "flags.bestStreak": "最长连续",
+  "flags.accuracy": "准确率",
+  "flags.answers": "答题记录",
 };

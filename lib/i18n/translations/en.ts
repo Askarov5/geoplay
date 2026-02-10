@@ -106,4 +106,14 @@ export const en: Translations = {
   "silhouette.hintFirstLetter": "Starts with",
   "silhouette.hintCapital": "Capital",
   "silhouette.hintNeighbors": "Neighbors",
+
+  // Flag Sprint
+  "flags.getReady": "Get ready...",
+  "flags.placeholder": "Name this flag...",
+  "flags.skip": "Skip",
+  "flags.correct": "Correct",
+  "flags.wrong": "Wrong / Skipped",
+  "flags.bestStreak": "Best Streak",
+  "flags.accuracy": "Accuracy",
+  "flags.answers": "Answers",
 };

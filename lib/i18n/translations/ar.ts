@@ -95,4 +95,13 @@ export const ar: Translations = {
   "silhouette.hintFirstLetter": "يبدأ بحرف",
   "silhouette.hintCapital": "العاصمة",
   "silhouette.hintNeighbors": "الدول المجاورة",
+
+  "flags.getReady": "استعد...",
+  "flags.placeholder": "ما اسم هذا العلم...",
+  "flags.skip": "تخطي",
+  "flags.correct": "صحيحة",
+  "flags.wrong": "خاطئة / متخطاة",
+  "flags.bestStreak": "أفضل سلسلة",
+  "flags.accuracy": "الدقة",
+  "flags.answers": "الإجابات",
 };
