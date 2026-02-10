@@ -38,7 +38,7 @@ export function PhaseExecution({
     <>
       {/* Top bar: route info + timers — fixed at top */}
       <motion.div
-        className="fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-4 py-3 bg-[#111827]/90 backdrop-blur-sm border-b border-[#1e293b]"
+        className="fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-3 py-2 sm:px-4 sm:py-3 bg-[#111827]/90 backdrop-blur-sm border-b border-[#1e293b]"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
@@ -75,7 +75,7 @@ export function PhaseExecution({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <div className="max-w-3xl mx-auto px-4 py-4 space-y-3">
+        <div className="max-w-3xl mx-auto px-3 py-2 sm:px-4 sm:py-4 space-y-2 sm:space-y-3">
           {/* Current position */}
           <div className="flex items-center justify-between">
             <div className="text-sm text-[#94a3b8]">

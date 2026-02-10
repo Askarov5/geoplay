@@ -107,7 +107,7 @@ export function SilhouetteGame({ difficulty, continent, onGoHome }: SilhouetteGa
   // Loading
   if (!gameState) {
     return (
-      <div className="min-h-screen bg-[#0a0e1a] flex items-center justify-center">
+      <div className="min-h-dvh bg-[#0a0e1a] flex items-center justify-center">
         <div className="text-[#94a3b8] text-lg animate-pulse">{t("common.loadingGame")}</div>
       </div>
     );
@@ -119,7 +119,7 @@ export function SilhouetteGame({ difficulty, continent, onGoHome }: SilhouetteGa
   if (gameState.phase === "resolution") {
     const stats = getSilhouetteStats(gameState);
     return (
-      <div className="min-h-screen bg-[#0a0e1a] flex items-center justify-center p-4">
+      <div className="min-h-dvh bg-[#0a0e1a] flex items-center justify-center p-4">
         <motion.div
           className="bg-[#111827] border border-[#1e293b] rounded-2xl p-8 max-w-lg w-full space-y-6"
           initial={{ scale: 0.9, opacity: 0 }}
@@ -229,7 +229,7 @@ export function SilhouetteGame({ difficulty, continent, onGoHome }: SilhouetteGa
   if (gameState.phase === "roundResult") {
     const wasCorrect = currentRound.solved;
     return (
-      <div className="min-h-screen bg-[#0a0e1a] flex items-center justify-center p-4">
+      <div className="min-h-dvh bg-[#0a0e1a] flex items-center justify-center p-4">
         <motion.div
           className="text-center space-y-6 max-w-sm mx-auto"
           initial={{ opacity: 0, y: 20 }}
@@ -290,9 +290,9 @@ export function SilhouetteGame({ difficulty, continent, onGoHome }: SilhouetteGa
     currentRound.hintsAvailable.length - currentRound.hintsRevealed.length;
 
   return (
-    <div className="min-h-screen bg-[#0a0e1a] flex flex-col">
+    <div className="min-h-dvh bg-[#0a0e1a] flex flex-col">
       {/* Top bar */}
-      <div className="flex items-center justify-between px-4 py-3 bg-[#111827]/90 backdrop-blur-sm border-b border-[#1e293b]">
+      <div className="flex items-center justify-between px-3 py-2 sm:px-4 sm:py-3 bg-[#111827]/90 backdrop-blur-sm border-b border-[#1e293b]">
         <div className="flex items-center gap-3">
           <button
             onClick={onGoHome}
@@ -326,18 +326,20 @@ export function SilhouetteGame({ difficulty, continent, onGoHome }: SilhouetteGa
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-6 gap-6">
-        {/* Silhouette */}
+      <div className="flex-1 flex flex-col items-center justify-center px-4 py-2 sm:py-6 gap-3 sm:gap-6 overflow-hidden">
+        {/* Silhouette — responsive size */}
         <motion.div
           key={gameState.currentRound}
           initial={{ opacity: 0, scale: 0.8, rotateY: 90 }}
           animate={{ opacity: 1, scale: 1, rotateY: 0 }}
           transition={{ type: "spring", stiffness: 200, damping: 20 }}
+          className="max-h-[35dvh] flex items-center justify-center"
         >
           <CountrySilhouette
             countryCode={currentRound.countryCode}
             wrong={feedbackState === "wrong"}
             size={280}
+            className="max-h-[35dvh] w-auto"
           />
         </motion.div>
 
@@ -381,8 +383,8 @@ export function SilhouetteGame({ difficulty, continent, onGoHome }: SilhouetteGa
       </div>
 
       {/* Bottom input area */}
-      <div className="bg-[#0a0e1a]/95 backdrop-blur-sm border-t border-[#1e293b] px-4 py-4">
-        <div className="max-w-md mx-auto space-y-3">
+      <div className="bg-[#0a0e1a]/95 backdrop-blur-sm border-t border-[#1e293b] px-3 py-2 sm:px-4 sm:py-4">
+        <div className="max-w-md mx-auto space-y-2 sm:space-y-3">
           <div className="flex items-center gap-2">
             <CountryInput
               onSubmit={handleGuess}

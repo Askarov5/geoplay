@@ -96,7 +96,7 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0e1a] flex flex-col">
+    <div className="min-h-dvh bg-[#0a0e1a] flex flex-col">
       {/* Language picker */}
       <div className="flex justify-end px-4 pt-4">
         <div className="flex gap-1 bg-[#111827] border border-[#1e293b] rounded-lg p-1">

@@ -141,7 +141,7 @@ export function ConnectGame({ difficulty, continent, onGoHome }: ConnectGameProp
   // Loading state while game initializes on client
   if (!gameState) {
     return (
-      <div className="relative w-full h-screen overflow-hidden bg-[#0a0e1a] flex items-center justify-center">
+      <div className="relative w-full h-dvh overflow-hidden bg-[#0a0e1a] flex items-center justify-center">
         <div className="text-[#94a3b8] text-lg animate-pulse">
           {t("common.generatingRoute")}
         </div>
@@ -150,7 +150,7 @@ export function ConnectGame({ difficulty, continent, onGoHome }: ConnectGameProp
   }
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-[#0a0e1a]">
+    <div className="relative w-full h-dvh overflow-hidden bg-[#0a0e1a]">
       {/* World Map (always visible as background) */}
       <div className="absolute inset-0 pointer-events-none">
         <WorldMap

@@ -24,7 +24,7 @@ export default function ConnectPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#0a0e1a] flex items-center justify-center">
+        <div className="min-h-dvh bg-[#0a0e1a] flex items-center justify-center">
           <div className="text-[#94a3b8] text-lg animate-pulse">Loading...</div>
         </div>
       }

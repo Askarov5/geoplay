@@ -126,7 +126,7 @@ export function CountryInput({
   return (
     <div className="relative w-full max-w-md">
       <div
-        className={`flex items-center gap-2 bg-[#111827] border-2 rounded-xl px-4 py-3 transition-colors ${feedbackClass}`}
+        className={`flex items-center gap-2 bg-[#111827] border-2 rounded-xl px-3 py-2 sm:px-4 sm:py-3 transition-colors ${feedbackClass}`}
       >
         <svg
           className="w-5 h-5 text-[#94a3b8] shrink-0"

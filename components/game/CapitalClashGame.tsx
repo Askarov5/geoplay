@@ -84,10 +84,13 @@ export function CapitalClashGame({ difficulty, continent, onGoHome }: CapitalCla
     }
   }, [gameState?.phase]);
 
-  // Focus input when playing
+  // Focus input when playing & scroll into view for mobile keyboard
   useEffect(() => {
     if (gameState?.phase === "playing" && inputRef.current) {
       inputRef.current.focus();
+      setTimeout(() => {
+        inputRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+      }, 300);
     }
   }, [gameState?.phase, gameState?.currentIndex]);
 
@@ -208,7 +211,7 @@ export function CapitalClashGame({ difficulty, continent, onGoHome }: CapitalCla
   // Loading
   if (!gameState) {
     return (
-      <div className="min-h-screen bg-[#0a0e1a] flex items-center justify-center">
+      <div className="min-h-dvh bg-[#0a0e1a] flex items-center justify-center">
         <div className="text-[#94a3b8] text-lg animate-pulse">{t("common.loadingGame")}</div>
       </div>
     );
@@ -217,7 +220,7 @@ export function CapitalClashGame({ difficulty, continent, onGoHome }: CapitalCla
   // ─── Countdown ───
   if (gameState.phase === "countdown") {
     return (
-      <div className="min-h-screen bg-[#0a0e1a] flex items-center justify-center">
+      <div className="min-h-dvh bg-[#0a0e1a] flex items-center justify-center">
         <motion.div
           className="text-center space-y-4"
           initial={{ opacity: 0 }}
@@ -246,7 +249,7 @@ export function CapitalClashGame({ difficulty, continent, onGoHome }: CapitalCla
   if (gameState.phase === "resolution") {
     const stats = getCapitalClashStats(gameState);
     return (
-      <div className="min-h-screen bg-[#0a0e1a] flex items-center justify-center p-4">
+      <div className="min-h-dvh bg-[#0a0e1a] flex items-center justify-center p-4">
         <motion.div
           className="bg-[#111827] border border-[#1e293b] rounded-2xl p-8 max-w-lg w-full space-y-6"
           initial={{ scale: 0.9, opacity: 0 }}
@@ -379,9 +382,9 @@ export function CapitalClashGame({ difficulty, continent, onGoHome }: CapitalCla
         : "border-[#334155] focus-within:border-[#f59e0b]";
 
   return (
-    <div className="min-h-screen bg-[#0a0e1a] flex flex-col">
+    <div className="min-h-dvh bg-[#0a0e1a] flex flex-col">
       {/* Timer bar */}
-      <div className="relative h-1.5 bg-[#1e293b]">
+      <div className="relative h-1 sm:h-1.5 bg-[#1e293b]">
         <motion.div
           className="absolute inset-y-0 left-0 rounded-r-full"
           style={{
@@ -393,7 +396,7 @@ export function CapitalClashGame({ difficulty, continent, onGoHome }: CapitalCla
       </div>
 
       {/* Top bar */}
-      <div className="flex items-center justify-between px-4 py-3 bg-[#111827]/90 backdrop-blur-sm border-b border-[#1e293b]">
+      <div className="flex items-center justify-between px-3 py-2 sm:px-4 sm:py-3 bg-[#111827]/90 backdrop-blur-sm border-b border-[#1e293b]">
         <div className="flex items-center gap-3">
           <button
             onClick={onGoHome}
@@ -438,7 +441,7 @@ export function CapitalClashGame({ difficulty, continent, onGoHome }: CapitalCla
       </div>
 
       {/* Question display area */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 gap-4">
+      <div className="flex-1 flex flex-col items-center justify-center px-4 gap-2 sm:gap-4 overflow-hidden">
         {/* Last answer flash */}
         <AnimatePresence>
           {lastAnswer && (
@@ -468,7 +471,7 @@ export function CapitalClashGame({ difficulty, continent, onGoHome }: CapitalCla
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
           >
             <div
-              className={`rounded-2xl border-4 p-8 text-center transition-colors duration-200 ${
+              className={`rounded-2xl border-4 p-4 sm:p-8 text-center transition-colors duration-200 ${
                 feedbackState === "correct"
                   ? "border-[#22c55e] bg-[#22c55e]/5"
                   : feedbackState === "wrong"
@@ -477,19 +480,19 @@ export function CapitalClashGame({ difficulty, continent, onGoHome }: CapitalCla
               }`}
             >
               {/* Question type indicator */}
-              <div className="text-xs uppercase tracking-[0.2em] text-[#94a3b8] font-semibold mb-3">
+              <div className="text-xs uppercase tracking-[0.2em] text-[#94a3b8] font-semibold mb-2 sm:mb-3">
                 {isCountryToCapital
                   ? t("capitals.whatCapital")
                   : t("capitals.whatCountry")}
               </div>
 
               {/* Main question text */}
-              <div className="text-3xl sm:text-4xl font-black text-[#f1f5f9] leading-tight">
+              <div className="text-2xl sm:text-4xl font-black text-[#f1f5f9] leading-tight">
                 {display.prompt}
               </div>
 
-              {/* Icon */}
-              <div className="text-4xl mt-4 opacity-30">
+              {/* Icon — hidden on small screens to save space */}
+              <div className="text-4xl mt-4 opacity-30 hidden sm:block">
                 {isCountryToCapital ? "🏛️" : "🌍"}
               </div>
             </div>
@@ -503,12 +506,12 @@ export function CapitalClashGame({ difficulty, continent, onGoHome }: CapitalCla
       </div>
 
       {/* Input area */}
-      <div className="bg-[#0a0e1a]/95 backdrop-blur-sm border-t border-[#1e293b] px-4 py-4">
+      <div className="bg-[#0a0e1a]/95 backdrop-blur-sm border-t border-[#1e293b] px-3 py-2 sm:px-4 sm:py-4">
         <div className="max-w-md mx-auto">
           <div className="flex items-center gap-2">
             <div className="relative w-full">
               <div
-                className={`flex items-center gap-2 bg-[#111827] border-2 rounded-xl px-4 py-3 transition-colors ${feedbackBorder}`}
+                className={`flex items-center gap-2 bg-[#111827] border-2 rounded-xl px-3 py-2 sm:px-4 sm:py-3 transition-colors ${feedbackBorder}`}
               >
                 <input
                   ref={inputRef}
