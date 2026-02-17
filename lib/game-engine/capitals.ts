@@ -1,4 +1,5 @@
 import { countries, countryByCode, resolveCountryCode } from "@/data/countries";
+import { getCountryTier, getMaxTierForDifficulty } from "@/data/country-tiers";
 import type {
   Continent,
   Difficulty,
@@ -19,12 +20,15 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-/** Build a pool of questions from country data */
+/** Build a pool of questions from country data, filtered by difficulty tier */
 function buildQuestionPool(
   continent: Continent,
-  mixDirections: boolean
+  mixDirections: boolean,
+  difficulty: Difficulty
 ): CapitalQuestion[] {
+  const maxTier = getMaxTierForDifficulty(difficulty);
   const pool = countries.filter((c) => {
+    if (getCountryTier(c.code) > maxTier) return false;
     if (continent === "all") return true;
     return c.continent === continent;
   });
@@ -63,12 +67,12 @@ export function createCapitalClashGame(
 ): CapitalClashGameState {
   const config = CAPITAL_CLASH_CONFIGS[difficulty];
 
-  let questions = buildQuestionPool(continent, config.mixDirections);
+  let questions = buildQuestionPool(continent, config.mixDirections, difficulty);
   // Ensure enough questions for a full session
   while (questions.length < 80) {
     questions = [
       ...questions,
-      ...buildQuestionPool(continent, config.mixDirections),
+      ...buildQuestionPool(continent, config.mixDirections, difficulty),
     ];
   }
 

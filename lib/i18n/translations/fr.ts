@@ -30,6 +30,9 @@ export const fr: Translations = {
   "difficulty.mediumDesc": "4-6 pays d'écart",
   "difficulty.hard": "Difficile",
   "difficulty.hardDesc": "7+ pays d'écart",
+  "difficulty.poolEasy": "connus",
+  "difficulty.poolMedium": "la plupart",
+  "difficulty.poolHard": "tous",
 
   "continent.all": "Tous",
   "continent.europe": "Europe",

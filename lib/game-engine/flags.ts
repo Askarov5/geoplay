@@ -1,4 +1,5 @@
 import { countries, resolveCountryCode } from "@/data/countries";
+import { getCountryTier, getMaxTierForDifficulty } from "@/data/country-tiers";
 import type {
   Continent,
   Difficulty,
@@ -22,10 +23,12 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-/** Get the pool of countries filtered by continent */
-function getCountryPool(continent: Continent): string[] {
+/** Get the pool of countries filtered by continent and difficulty tier */
+function getCountryPool(continent: Continent, difficulty: Difficulty): string[] {
+  const maxTier = getMaxTierForDifficulty(difficulty);
   return countries
     .filter((c) => {
+      if (getCountryTier(c.code) > maxTier) return false;
       if (continent === "all") return true;
       return c.continent === continent;
     })
@@ -38,7 +41,7 @@ export function createFlagSprintGame(
   continent: Continent = "all"
 ): FlagSprintGameState {
   const config = FLAG_SPRINT_CONFIGS[difficulty];
-  const pool = getCountryPool(continent);
+  const pool = getCountryPool(continent, difficulty);
 
   // Shuffle and make a large queue (repeat if needed for 60s of play)
   let queue = shuffle(pool);

@@ -1,5 +1,6 @@
 import { countries, countryByCode, resolveCountryCode } from "@/data/countries";
 import { adjacencyGraph } from "@/data/adjacency";
+import { getCountryTier, getMaxTierForDifficulty } from "@/data/country-tiers";
 import type {
   Continent,
   Difficulty,
@@ -10,19 +11,21 @@ import type {
 } from "./types";
 import { SILHOUETTE_CONFIGS } from "./types";
 
-// Countries that are too small or unlikely to have recognizable silhouettes at 110m resolution
-const EXCLUDED_CODES = new Set([
-  "AD", "MC", "SM", "VA", "LI", "MT", "SG", "BH", "MV", "KM",
+// Countries that are too small to render as recognizable silhouettes at 110m resolution
+// These are excluded from ALL difficulty levels (even hard) because they're invisible on the SVG
+const TINY_SILHOUETTE_CODES = new Set([
+  "AD", "MC", "SM", "VA", "LI", "MT", "SG", "BH", "MV",
   "SC", "CV", "ST", "AG", "BB", "DM", "GD", "KN", "LC", "VC",
-  "TT", "WS", "TO", "MU", "BS", "JM", "CY", "BN", "TL", "QA",
-  "KW", "PS", "XK", "LU",
+  "WS", "TO", "MU",
 ]);
 
-/** Get a pool of valid countries filtered by continent */
-function getCountryPool(continent: Continent): string[] {
+/** Get a pool of valid countries filtered by continent and difficulty tier */
+function getCountryPool(continent: Continent, difficulty: Difficulty): string[] {
+  const maxTier = getMaxTierForDifficulty(difficulty);
   return countries
     .filter((c) => {
-      if (EXCLUDED_CODES.has(c.code)) return false;
+      if (TINY_SILHOUETTE_CODES.has(c.code)) return false;
+      if (getCountryTier(c.code) > maxTier) return false;
       if (continent === "all") return true;
       return c.continent === continent;
     })
@@ -70,13 +73,13 @@ export function createSilhouetteGame(
   continent: Continent = "all"
 ): SilhouetteGameState {
   const config = SILHOUETTE_CONFIGS[difficulty];
-  const pool = getCountryPool(continent);
+  const pool = getCountryPool(continent, difficulty);
   const shuffled = shuffle([...pool]);
   const selected = shuffled.slice(0, config.totalRounds);
 
   // If not enough countries in pool, pad from "all"
   if (selected.length < config.totalRounds) {
-    const allPool = getCountryPool("all").filter((c) => !selected.includes(c));
+    const allPool = getCountryPool("all", difficulty).filter((c) => !selected.includes(c));
     const extra = shuffle(allPool).slice(0, config.totalRounds - selected.length);
     selected.push(...extra);
   }

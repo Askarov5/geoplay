@@ -56,6 +56,15 @@ export default function HomePage() {
   const borderBlitzCfg = BORDER_BLITZ_CONFIGS[selectedDifficulty];
   const mapQuizCfg = MAP_QUIZ_CONFIGS[selectedDifficulty];
 
+  // Pool label based on difficulty tier
+  const poolLabel = t(
+    selectedDifficulty === "easy"
+      ? "difficulty.poolEasy"
+      : selectedDifficulty === "medium"
+        ? "difficulty.poolMedium"
+        : "difficulty.poolHard"
+  );
+
   const gameModes = [
     {
       id: "connect",
@@ -75,7 +84,7 @@ export default function HomePage() {
       accentColor: "#a855f7",
       available: true,
       path: "/games/silhouette",
-      difficultyInfo: `${silhouetteCfg.totalRounds} ${t("flags.diffRounds")} · ${silhouetteCfg.roundTime}s ${t("flags.diffEach")}`,
+      difficultyInfo: `${silhouetteCfg.totalRounds} ${t("flags.diffRounds")} · ${silhouetteCfg.roundTime}s ${t("flags.diffEach")} · ${poolLabel}`,
     },
     {
       id: "flags",
@@ -85,7 +94,7 @@ export default function HomePage() {
       accentColor: "#22c55e",
       available: true,
       path: "/games/flags",
-      difficultyInfo: `${flagsCfg.totalTime}s${flagsCfg.wrongPenalty > 0 ? ` · ${t("flags.diffWrong")} -${flagsCfg.wrongPenalty} pts` : ""}`,
+      difficultyInfo: `${flagsCfg.totalTime}s · ${poolLabel}${flagsCfg.wrongPenalty > 0 ? ` · ${t("flags.diffWrong")} -${flagsCfg.wrongPenalty} pts` : ""}`,
     },
     {
       id: "capitals",
@@ -95,7 +104,7 @@ export default function HomePage() {
       accentColor: "#f59e0b",
       available: true,
       path: "/games/capitals",
-      difficultyInfo: `${capitalsCfg.totalTime}s · ${capitalsCfg.mixDirections ? t("capitals.diffMixed") : t("capitals.diffOneWay")}${capitalsCfg.wrongPenalty > 0 ? ` · ${t("flags.diffWrong")} -${capitalsCfg.wrongPenalty}` : ""}`,
+      difficultyInfo: `${capitalsCfg.totalTime}s · ${poolLabel} · ${capitalsCfg.mixDirections ? t("capitals.diffMixed") : t("capitals.diffOneWay")}${capitalsCfg.wrongPenalty > 0 ? ` · ${t("flags.diffWrong")} -${capitalsCfg.wrongPenalty}` : ""}`,
     },
     {
       id: "borderBlitz",
@@ -115,7 +124,7 @@ export default function HomePage() {
       accentColor: "#06b6d4",
       available: true,
       path: "/games/map-quiz",
-      difficultyInfo: `${mapQuizCfg.totalTime}s${mapQuizCfg.wrongPenalty > 0 ? ` · ${t("flags.diffWrong")} -${mapQuizCfg.wrongPenalty}` : ""}`,
+      difficultyInfo: `${mapQuizCfg.totalTime}s · ${poolLabel}${mapQuizCfg.wrongPenalty > 0 ? ` · ${t("flags.diffWrong")} -${mapQuizCfg.wrongPenalty}` : ""}`,
     },
   ];
 

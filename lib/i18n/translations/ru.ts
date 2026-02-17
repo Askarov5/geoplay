@@ -30,6 +30,9 @@ export const ru: Translations = {
   "difficulty.mediumDesc": "4-6 стран расстояние",
   "difficulty.hard": "Сложно",
   "difficulty.hardDesc": "7+ стран расстояние",
+  "difficulty.poolEasy": "известные",
+  "difficulty.poolMedium": "большинство",
+  "difficulty.poolHard": "все",
 
   "continent.all": "Все",
   "continent.europe": "Европа",

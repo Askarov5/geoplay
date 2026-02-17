@@ -52,6 +52,9 @@ export interface Translations {
   "difficulty.mediumDesc": string;
   "difficulty.hard": string;
   "difficulty.hardDesc": string;
+  "difficulty.poolEasy": string;
+  "difficulty.poolMedium": string;
+  "difficulty.poolHard": string;
 
   // ─── Continent ───
   "continent.all": string;

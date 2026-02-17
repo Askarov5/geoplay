@@ -30,6 +30,9 @@ export const ar: Translations = {
   "difficulty.mediumDesc": "4-6 دول مسافة",
   "difficulty.hard": "صعب",
   "difficulty.hardDesc": "7+ دول مسافة",
+  "difficulty.poolEasy": "المشهورة",
+  "difficulty.poolMedium": "معظم",
+  "difficulty.poolHard": "الكل",
 
   "continent.all": "الكل",
   "continent.europe": "أوروبا",

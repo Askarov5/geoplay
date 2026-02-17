@@ -350,6 +350,77 @@ For camera fly-to targets, use the same coordinate database from the web app (21
 
 ## 6. Game Engine Layer (Dart)
 
+### Country Tier System (Difficulty-Based Pool Filtering)
+
+Every country is assigned a **tier** (1, 2, or 3) that controls whether it appears in a given difficulty level. This is the most impactful difficulty mechanic — it determines **what** the player faces, not just how much time they have.
+
+```dart
+/// Country recognition tiers
+enum CountryTier { tier1, tier2, tier3 }
+
+/// Tier 1 (~55 countries) — Well-known: large, distinctive shape, globally recognized
+///   US, China, Brazil, France, Japan, Australia, India, Egypt, Mexico, Italy,
+///   Germany, Russia, UK, Spain, Turkey, Thailand, South Korea, Argentina, etc.
+///
+/// Tier 2 (~65 countries) — Moderately known: regional significance, medium-sized
+///   Croatia, Cambodia, Kazakhstan, Morocco, Jamaica, Austria, Bangladesh,
+///   Israel, Mongolia, Philippines, Serbia, Chile equivalent nations, etc.
+///
+/// Tier 3 (~93 countries) — Obscure/micro: small, micro-states, easily confused
+///   Liechtenstein, Comoros, Eswatini, Guyana, Kosovo, Tajikistan, Bhutan,
+///   Djibouti, Gambia, Vatican City, Monaco, all small Caribbean islands, etc.
+
+const countryTiers = <String, CountryTier>{
+  'US': CountryTier.tier1, 'CN': CountryTier.tier1, 'BR': CountryTier.tier1,
+  'FR': CountryTier.tier1, 'DE': CountryTier.tier1, 'JP': CountryTier.tier1,
+  // ... all 213 countries classified (see data/country-tiers.ts for full list)
+  'LI': CountryTier.tier3, 'KM': CountryTier.tier3, 'SZ': CountryTier.tier3,
+};
+```
+
+**Difficulty → Tier mapping:**
+
+| Difficulty | Max Tier | Pool Size | Experience |
+|---|---|---|---|
+| **Easy** | Tier 1 only | ~55 countries | Big, famous, easy-to-find countries |
+| **Medium** | Tier 1 + 2 | ~120 countries | Adds regional/medium countries |
+| **Hard** | All tiers | All 213 | Micro-states, obscure nations included |
+
+**Helper functions (Dart):**
+
+```dart
+CountryTier getCountryTier(String code) => countryTiers[code] ?? CountryTier.tier3;
+
+CountryTier getMaxTierForDifficulty(Difficulty difficulty) {
+  switch (difficulty) {
+    case Difficulty.easy:   return CountryTier.tier1;
+    case Difficulty.medium: return CountryTier.tier2;
+    case Difficulty.hard:   return CountryTier.tier3;
+  }
+}
+
+/// Generic country pool filter — used by ALL game engines
+List<String> getCountryPool(Difficulty difficulty, Continent continent) {
+  final maxTier = getMaxTierForDifficulty(difficulty);
+  return countries
+    .where((c) => getCountryTier(c.code).index <= maxTier.index)
+    .where((c) => continent == Continent.all || c.continent == continent.name)
+    .map((c) => c.code)
+    .toList();
+}
+```
+
+**Per-game usage:**
+
+| Game | How Tiers Apply |
+|---|---|
+| **Find on Map** | Easy = only big countries (easy to tap). Hard = micro-states included. |
+| **Silhouette** | Easy = recognizable shapes only. Hard = all renderable countries. |
+| **Flag Sprint** | Easy = well-known flags. Hard = all 213 flags. |
+| **Capital Clash** | Easy = famous capitals (Paris, Tokyo). Hard = all (Thimphu, Vaduz). |
+| **Border Blitz** | Anchor country filtered by tier. Easy = well-known anchors with 1-3 neighbors. |
+| **Connect Countries** | Not tier-filtered (path length already controls difficulty; filtering would reduce graph connectivity). |
+
 ### Porting Strategy
 
 Every game engine from the web app is a set of pure functions. Port them to Dart with identical logic:
@@ -370,6 +441,8 @@ Dart:        SubmitResult submitGuess(GameState state, String input)
 | `Date.now()` | `DateTime.now().millisecondsSinceEpoch` |
 | `string \| null` | `String?` |
 | `function shuffle<T>(arr: T[]): T[]` | `List<T> shuffle<T>(List<T> arr)` (use `..shuffle()`) |
+| `getCountryTier(code)` | `getCountryTier(code)` (same pattern) |
+| `getMaxTierForDifficulty(diff)` | `getMaxTierForDifficulty(diff)` (same pattern) |
 
 ### Immutable State with Freezed (Optional but Recommended)
 
@@ -453,6 +526,7 @@ class ConnectGameNotifier extends StateNotifier<ConnectGameState?> {
 ### Game 1: Connect Countries
 
 **Map role**: Primary — the game is played ON the map.
+**Tier filtering**: None — path length controls difficulty. All connected countries remain in the graph.
 
 | Phase | Map Behavior | Overlay |
 |---|---|---|
@@ -470,6 +544,7 @@ class ConnectGameNotifier extends StateNotifier<ConnectGameState?> {
 ### Game 2: Find the Country (Silhouette / Border Shape)
 
 **Map role**: Supplementary during play, cinematic on reveal.
+**Tier filtering**: Easy = Tier 1 only (large, recognizable shapes). Medium = Tier 1+2. Hard = all renderable countries.
 
 **Mobile adaptation**: Instead of SVG silhouettes, use the map itself:
 
@@ -485,6 +560,8 @@ class ConnectGameNotifier extends StateNotifier<ConnectGameState?> {
 2. Globe slowly rotates behind as ambient decoration
 3. On correct: card flips to reveal green country name, camera flies to the country on the globe
 
+**Tier impact**: On Easy, the player only sees countries like France, Brazil, Australia — instantly recognizable outlines. On Hard, they might get Lesotho, Bhutan, or Equatorial Guinea.
+
 | Phase | Map Behavior | Overlay |
 |---|---|---|
 | **Playing** | Shows border outline of target country, zoomed to a regional view. No labels. | Input bar, hints, timer, round counter |
@@ -496,6 +573,7 @@ class ConnectGameNotifier extends StateNotifier<ConnectGameState?> {
 ### Game 3: Flag Sprint
 
 **Map role**: Ambient + celebratory.
+**Tier filtering**: Easy = Tier 1 flags only (~55 well-known flags). Medium = Tier 1+2. Hard = all 213 flags.
 
 | Phase | Map Behavior | Overlay |
 |---|---|---|
@@ -505,11 +583,14 @@ class ConnectGameNotifier extends StateNotifier<ConnectGameState?> {
 
 **Camera**: Stays at continent/world zoom. No dramatic movements during sprint — speed is the priority. Quick 100ms green fill per correct answer, no camera animation.
 
+**Tier impact**: Easy mode shows flags everyone recognizes (US, Japan, Brazil, UK). Hard mode includes flags like Comoros, Eswatini, and Palau.
+
 ---
 
 ### Game 4: Capital Clash
 
 **Map role**: Ambient + educational fly-to.
+**Tier filtering**: Easy = Tier 1 capitals only (Paris, Tokyo, Cairo). Medium = Tier 1+2. Hard = all capitals (Thimphu, Vaduz, Moroni).
 
 | Phase | Map Behavior | Overlay |
 |---|---|---|
@@ -524,6 +605,7 @@ class ConnectGameNotifier extends StateNotifier<ConnectGameState?> {
 ### Game 5: Border Blitz
 
 **Map role**: Primary — the game IS the map.
+**Tier filtering**: Anchor country is filtered by tier AND neighbor count. Easy = Tier 1 anchors with 1-3 neighbors. Hard = all tiers with 7+ neighbors. Cascading fallback relaxes tier → neighbor count → ultimate fallback (Germany) if pool is empty.
 
 | Phase | Map Behavior | Overlay |
 |---|---|---|
@@ -538,6 +620,7 @@ class ConnectGameNotifier extends StateNotifier<ConnectGameState?> {
 ### Game 6: Find on Map
 
 **Map role**: THE game. Player interacts directly with the globe.
+**Tier filtering**: Easy = Tier 1 only (~55 big, easy-to-tap countries). Medium = Tier 1+2 (~120). Hard = all 213 including micro-states.
 
 | Phase | Map Behavior | Overlay |
 |---|---|---|
@@ -548,6 +631,8 @@ class ConnectGameNotifier extends StateNotifier<ConnectGameState?> {
 **Camera**: Player controls the camera. On correct answer, a subtle zoom pulse (zoom in 0.5 then back) centered on the correct country. No forced camera movements during play — the player is navigating.
 
 **Labels**: All Mapbox built-in country labels are HIDDEN during this game. The player must recognize countries by shape and position alone.
+
+**Tier impact**: This is where tiers matter the most. On Easy, the player only needs to find US, Brazil, India — large targets. On Hard, they'll need to find Djibouti, Liechtenstein, and Eswatini on a globe — requiring real zoom-and-hunt skills.
 
 ---
 
@@ -580,10 +665,15 @@ The home screen is an overlay on the rotating globe:
 │ │ └───────────────────────────┘│ │
 │ │ ┌───────────────────────────┐│ │
 │ │ │ 🗺️ Find the Country       ││ │
-│ │ │    5 rounds · 30s each    ││ │
-│ │ └───────────────────────────┘│ │
+│ │ │  5 rounds · 30s · famous  ││ │  ← Pool label changes
+│ │ └───────────────────────────┘│ │     with difficulty
 │ │ ┌───────────────────────────┐│ │
 │ │ │ 🏁 Flag Sprint            ││ │
+│ │ │  60s · well-known         ││ │
+│ │ └───────────────────────────┘│ │
+│ │ ┌───────────────────────────┐│ │
+│ │ │ 📍 Find on Map            ││ │
+│ │ │  90s · well-known         ││ │
 │ │ └───────────────────────────┘│ │
 │ │         ... more games       │ │
 │ └──────────────────────────────┘ │
@@ -598,6 +688,23 @@ The home screen is an overlay on the rotating globe:
 - **Touch**: User can freely spin/zoom the globe behind the overlay
 - **Continent selection**: Tapping a continent chip → camera smoothly flies to that continent. The globe shows the selected region prominently behind the semi-transparent game list.
 - **Game selection**: Tapping a game card → home overlay fades out (300ms) → camera flies to relevant position → countdown begins
+
+### Difficulty-Aware Game Cards
+
+Each game card shows a **pool label** that changes based on the selected difficulty, making the tier system visible and understandable to the player:
+
+| Difficulty | Pool Label | Translations |
+|---|---|---|
+| Easy | "well-known" | EN: well-known, ZH: 知名, ES: conocidos, AR: المشهورة, FR: connus, PT: conhecidos, RU: известные |
+| Medium | "most" | EN: most, ZH: 大部分, ES: mayoría, AR: معظم, FR: la plupart, PT: maioria, RU: большинство |
+| Hard | "all" | EN: all, ZH: 全部, ES: todos, AR: الكل, FR: tous, PT: todos, RU: все |
+
+**Example card info strings:**
+- Flag Sprint + Easy: `"60s · well-known"`
+- Flag Sprint + Hard: `"45s · all · wrong = -10 pts"`
+- Find on Map + Easy: `"90s · well-known"`
+- Silhouette + Medium: `"8 rounds · 20s each · most"`
+- Capital Clash + Hard: `"45s · all · both ways · wrong = -10"`
 
 ### Frosted Glass Aesthetic
 
@@ -1162,7 +1269,7 @@ Bundle sounds as small WAV/OGG files (~50KB total). Use `just_audio` for low-lat
 
 4. **Isolate for BFS** — The `findShortestPath` BFS algorithm runs in a Dart isolate to avoid blocking the UI thread during game creation (especially for hard difficulty with long paths).
 
-5. **Pre-warm country data** — Load and index all country data, adjacency graph, and translations during the splash screen, before the home screen appears.
+5. **Pre-warm country data** — Load and index all country data, adjacency graph, country tiers, and translations during the splash screen, before the home screen appears.
 
 6. **Image caching** — Flag images loaded via `CachedNetworkImage` or pre-bundled as assets.
 
@@ -1205,6 +1312,7 @@ geoplay_mobile/
 │   │   │   └── map_highlight.dart        # Country highlighting logic
 │   │   ├── data/
 │   │   │   ├── countries.dart            # Country model + 213 entries
+│   │   │   ├── country_tiers.dart        # Tier 1/2/3 per country + helpers
 │   │   │   ├── adjacency.dart            # Border graph
 │   │   │   ├── graph.dart                # BFS pathfinding
 │   │   │   ├── country_names.dart        # Localized country names (7 langs)
@@ -1393,14 +1501,14 @@ abstract class GameOverlay extends ConsumerWidget {
 
 ### Adding a New Game (Checklist)
 
-1. **Engine**: Create `lib/engines/new_game_engine.dart` — pure Dart, no imports from Flutter
+1. **Engine**: Create `lib/engines/new_game_engine.dart` — pure Dart, no imports from Flutter. Use `getCountryPool(difficulty, continent)` from `country_tiers.dart` to filter the country pool by tier.
 2. **Provider**: Add a `StateNotifierProvider` in `lib/providers/game_providers.dart`
 3. **Overlay**: Create `lib/screens/game/new_game_overlay.dart` — extends `GameOverlay`
-4. **Registration**: Add to the game list in `home_overlay.dart` — one entry with title, description, icon, accent color, route
+4. **Registration**: Add to the game list in `home_overlay.dart` — one entry with title, description, icon, accent color, route, and difficulty-aware info string (include `poolLabel`)
 5. **i18n**: Add translation keys to all 7 ARB files
 6. **Config**: Add difficulty configuration constants
 
-That's 5 files to create and 2 files to modify. The map controller, shared widgets, theming, and navigation all work automatically.
+That's 5 files to create and 2 files to modify. The map controller, shared widgets, theming, tier system, and navigation all work automatically.
 
 ### Potential Future Games
 
@@ -1424,9 +1532,10 @@ This specification describes a **globe-first mobile app** where:
 - The **3D Mapbox globe is always visible** and acts as the canvas for all games
 - **Flutter** provides pixel-perfect cross-platform UI with GPU-composited overlays
 - **6 games** each have a unique relationship with the map (from primary interaction to ambient decoration)
+- **Country tier system** makes difficulty meaningful — Easy shows well-known countries (~55), Medium adds regional ones (~120), Hard includes all 213 down to micro-states
 - **Dark and light themes** switch both the UI and the map style
 - **7 languages** with full support for country names, capital names, and UI strings (including RTL for Arabic)
 - **Offline premium** lets users download map tiles for airplane-mode play
-- **New games** can be added with 5 files and a game card — the architecture scales indefinitely
+- **New games** can be added with 5 files and a game card — the architecture (including tier-based pool filtering) scales indefinitely
 
 The result is an app that feels like a polished, cinematic geography experience — not a quiz app with a map bolted on, but a living globe that happens to host games.

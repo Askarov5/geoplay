@@ -1,4 +1,5 @@
 import { countries } from "@/data/countries";
+import { getCountryTier, getMaxTierForDifficulty } from "@/data/country-tiers";
 import type {
   Continent,
   Difficulty,
@@ -17,10 +18,12 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-/** Get the pool of countries filtered by continent */
-function getCountryPool(continent: Continent): string[] {
+/** Get the pool of countries filtered by continent and difficulty tier */
+function getCountryPool(continent: Continent, difficulty: Difficulty): string[] {
+  const maxTier = getMaxTierForDifficulty(difficulty);
   return countries
     .filter((c) => {
+      if (getCountryTier(c.code) > maxTier) return false;
       if (continent === "all") return true;
       return c.continent === continent;
     })
@@ -33,7 +36,7 @@ export function createMapQuizGame(
   continent: Continent = "all"
 ): MapQuizGameState {
   const config = MAP_QUIZ_CONFIGS[difficulty];
-  const pool = getCountryPool(continent);
+  const pool = getCountryPool(continent, difficulty);
 
   // Shuffle and ensure we have enough countries
   let queue = shuffle(pool);

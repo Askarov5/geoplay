@@ -30,6 +30,9 @@ export const zh: Translations = {
   "difficulty.mediumDesc": "相隔4-6个国家",
   "difficulty.hard": "困难",
   "difficulty.hardDesc": "相隔7个以上国家",
+  "difficulty.poolEasy": "知名",
+  "difficulty.poolMedium": "大部分",
+  "difficulty.poolHard": "全部",
 
   "continent.all": "全部",
   "continent.europe": "欧洲",

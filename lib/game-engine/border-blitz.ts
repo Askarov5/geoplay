@@ -1,6 +1,7 @@
 import { countries } from "@/data/countries";
 import { resolveCountryCode } from "@/data/countries";
 import { adjacencyGraph } from "@/data/adjacency";
+import { getCountryTier, getMaxTierForDifficulty } from "@/data/country-tiers";
 import type {
   Continent,
   Difficulty,
@@ -13,17 +14,20 @@ export function getNeighborsForAnchor(code: string): string[] {
   return adjacencyGraph[code] || [];
 }
 
-/** Get a pool of valid anchor countries filtered by continent and neighbor count range. */
+/** Get a pool of valid anchor countries filtered by continent, neighbor count range, and tier. */
 function getAnchorPool(
   continent: Continent,
   minNeighbors: number,
-  maxNeighbors: number
+  maxNeighbors: number,
+  difficulty: Difficulty
 ): string[] {
+  const maxTier = getMaxTierForDifficulty(difficulty);
   return countries
     .filter((c) => {
       const neighbors = adjacencyGraph[c.code];
       if (!neighbors || neighbors.length < 1) return false;
       if (neighbors.length < minNeighbors || neighbors.length > maxNeighbors) return false;
+      if (getCountryTier(c.code) > maxTier) return false;
       if (continent === "all") return true;
       return c.continent === continent;
     })
@@ -46,13 +50,18 @@ function pickAnchor(
   exclude?: string
 ): string {
   const config = BORDER_BLITZ_CONFIGS[difficulty];
-  let pool = getAnchorPool(continent, config.minNeighbors, config.maxNeighbors)
+  let pool = getAnchorPool(continent, config.minNeighbors, config.maxNeighbors, difficulty)
     .filter((c) => c !== exclude);
 
   // Fallback: if no countries match the exact range (e.g. small continent),
-  // relax the filter progressively
+  // relax the neighbor filter but keep the tier filter
   if (pool.length === 0) {
-    pool = getAnchorPool(continent, 1, 99).filter((c) => c !== exclude);
+    pool = getAnchorPool(continent, 1, 99, difficulty).filter((c) => c !== exclude);
+  }
+
+  // Ultimate fallback: relax tier filter too
+  if (pool.length === 0) {
+    pool = getAnchorPool(continent, 1, 99, "hard").filter((c) => c !== exclude);
   }
 
   const shuffled = shuffle(pool);
