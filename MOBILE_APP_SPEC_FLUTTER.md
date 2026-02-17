@@ -1757,8 +1757,8 @@ class OfflineMapManager {
 
 ### Pricing
 
-- **One-time purchase**: $4.99 (simplest, highest conversion)
-- **OR Annual subscription**: $9.99/year (better for covering Mapbox costs at scale)
+- **One-time purchase**: $4.99 (simplest, highest conversion) enable offline mode (current)
+- **OR Annual subscription**: $9.99/year (better for covering Mapbox costs at scale) enable offline + ad-free + compete with friends (future feature)
 
 ### Implementation
 
