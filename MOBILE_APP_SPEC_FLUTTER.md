@@ -14,7 +14,7 @@
 6. [Country Data & Wiki](#6-country-data--wiki)
 7. [Game Engine Layer (Dart)](#7-game-engine-layer-dart)
 8. [Game Blueprints — How Each Game Lives on the Map](#8-game-blueprints--how-each-game-lives-on-the-map)
-9. [Home Screen — The Living Globe](#9-home-screen--the-living-globe)
+9. [Home Screen — The Split-Screen Globe](#9-home-screen--the-split-screen-globe)
 10. [Shared Widget Library](#10-shared-widget-library)
 11. [Theming — Dark & Light Mode](#11-theming--dark--light-mode)
 12. [Internationalization (i18n)](#12-internationalization-i18n)
@@ -953,63 +953,271 @@ This is NOT a competitive game — it's a **relaxed learning mode** with no time
 
 ---
 
-## 9. Home Screen — The Living Globe
+## 9. Home Screen — The Split-Screen Globe
 
-### Layout
+### Core Concept
 
-The home screen is an overlay on the rotating globe:
+The home screen is a **two-panel split**: the 3D globe on top, the game launcher on the bottom, with a draggable divider between them. The divider snaps to three states — creating a smooth, spring-physics transition between "explore the world" and "play games."
+
+### The Three States
+
+```
+ EXPLORE MODE            DEFAULT (50/50)            PLAY MODE
+ (swipe down)                                       (swipe up)
+
+┌────────────────┐    ┌────────────────────┐    ┌────────────────┐
+│ [⚙️]      [👤] │    │ [⚙️]          [👤] │    │ ~~globe peek~~ │
+│                │    │                    │    ├── drag handle ──┤
+│     🌍         │    │      🌍            │    │                │
+│   GLOBE        │    │    GLOBE           │    │  G E O P L A Y │
+│  (full view)   │    │  (half view)       │    │                │
+│  Labels ON     │    │  Slowly rotating   │    │  [Easy][Med]   │
+│  Tap = Card    │    │                    │    │  [🌍][🇪🇺][🌏]  │
+│  Spin / Zoom   │    ├── drag handle ─────┤    │                │
+│                │    │                    │    │  🔗 Connect     │
+│                │    │  G E O P L A Y    │    │  🗺️ Silhouette  │
+│                │    │  [Easy][Med][Hard] │    │  🏁 Flags       │
+│                │    │  [🌍][🇪🇺][🌏]...  │    │  ⚡ Capitals    │
+│                │    │                    │    │  ⚔️ Border      │
+│                │    │  🔗 Connect        │    │  📍 Map Quiz    │
+│                │    │  🗺️ Silhouette     │    │  🃏 Flashcards  │
+│                │    │  🏁 Flag Sprint    │    │                │
+├── drag handle ─┤    │  ... (2-3 visible) │    │                │
+│ ⬆ Swipe up     │    └────────────────────┘    └────────────────┘
+└────────────────┘
+  Globe ~90%           Globe ~50%                  Globe ~10%
+  Games = pill         Games ~50%                  Games ~90%
+```
+
+### State Details
+
+#### State 1: Default (50/50 Split)
+
+The landing state when the app opens.
+
+- **Globe (top half)**: Slowly rotating 3D globe. Country labels visible. Ambient and inviting.
+- **Games panel (bottom half)**: Title, difficulty selector, continent filter, and 2-3 game cards visible (scrollable for more).
+- **Drag handle**: Small pill-shaped indicator at the divider. Draggable up or down.
+
+**Tap behavior in default state:**
+- **Tap on the globe** → Transitions to **Explore Mode** (the globe expands to fill the screen). This is the key interaction: any touch on the globe half signals "I want to explore", so the panel smoothly slides down.
+- **Tap on a game card** → Opens that specific game (camera flies, countdown begins).
+- **Tap on title/difficulty/continent area** → Scrolls game list or changes selection. If user taps the games panel and only 2-3 cards are visible, they can also drag up to reveal all games.
+
+#### State 2: Explore Mode (Globe ~90%)
+
+Entered by: tapping the globe in default state, or dragging the handle down.
+
+- **Globe (full screen)**: Interactive — spin, pinch-zoom, rotate. Country labels visible. Countries are tappable.
+- **Country tap** → Country Card bottom sheet slides up over the globe with wiki data, personal stats, and "Fly to Country" / "Study Flashcards" actions.
+- **Games panel**: Collapsed to a small frosted pill at the bottom showing "⬆ Swipe up for games". Just enough to remind the user games exist.
+- **Return**: Swipe up on the pill, or tap the pill → transitions back to default or play mode.
+
+This is the **atlas / learning mode**. No game UI, no timers. Pure exploration.
+
+#### State 3: Play Mode (Games ~90%)
+
+Entered by: dragging the handle up from default state.
+
+- **Globe (top strip)**: Shrinks to a thin ambient strip (~10% of screen). Globe camera pulls back to show a wide view. Acts as visual branding — the globe is always present.
+- **Games panel (full screen)**: All game cards visible without scrolling on most devices. Difficulty selector, continent filter, and the complete game list fully accessible.
+- **Return**: Drag handle down, or tap the globe strip → transitions back to default.
+
+This is the **competitive mode**. The user is here to pick a game and play.
+
+### Responsive Split Ratios
+
+The default ratio adapts to screen size:
+
+| Screen Size | Default Split | Behavior |
+|---|---|---|
+| Small (<5.5") | 35/65 (globe/games) | Globe shows enough to be inviting, games get more room |
+| Medium (5.5"–6.5") | 50/50 | Standard balanced view |
+| Large (>6.5" / tablets) | 55/45 | Globe gets more room — more immersive |
+
+In Explore mode, the globe always takes ~90%. In Play mode, the globe strip is always ~10% (enough for a narrow globe peek).
+
+### Drag Handle & Physics
+
+```dart
+/// Home screen split controller
+class HomeSplitController {
+  /// Three snap points as fraction of screen height for the globe
+  static const double exploreStop = 0.90;  // Globe 90%
+  static const double defaultStop = 0.50;  // Globe 50% (adaptive)
+  static const double playStop    = 0.10;  // Globe 10%
+
+  /// Spring physics for snap animation
+  static const spring = SpringDescription(
+    mass: 1.0,
+    stiffness: 500.0,
+    damping: 30.0,
+  );
+}
+```
+
+**Drag behavior:**
+- Dragging the handle smoothly resizes both panels in real-time
+- On release, snaps to the nearest stop based on position + velocity
+- If user flings fast, it skips to the next stop in the fling direction
+- Globe camera dynamically adjusts zoom level as the globe panel resizes (smaller panel → wider zoom, so the globe always looks complete, never cropped)
+
+**Globe tap → Explore transition:**
+When the user taps anywhere on the globe in default state:
+1. The tap is consumed (no country query yet — that happens only in Explore mode)
+2. The split animates from 50/50 to Explore mode (spring physics, ~400ms)
+3. Globe labels fade in, country tap listeners activate
+4. Now tapping a country opens the Country Card
+
+This is intentional: in 50/50 mode, the globe is too small to accurately tap individual countries, so any touch on it means "show me more globe."
+
+### Layout Implementation
+
+```dart
+class HomeScreen extends ConsumerStatefulWidget { ... }
+
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _splitController;
+  double _splitRatio = HomeSplitController.defaultStop;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        // ── Layer 0: Globe (always present) ──
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          height: MediaQuery.of(context).size.height * _splitRatio,
+          child: GestureDetector(
+            onTap: _expandToExploreMode,
+            child: MapboxMapView(...),  // The persistent globe
+          ),
+        ),
+
+        // ── Layer 1: Games Panel ──
+        Positioned(
+          top: MediaQuery.of(context).size.height * _splitRatio,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: GamesPanel(
+            onGameSelected: _launchGame,
+            difficulty: selectedDifficulty,
+            continent: selectedContinent,
+          ),
+        ),
+
+        // ── Layer 2: Drag Handle ──
+        Positioned(
+          top: MediaQuery.of(context).size.height * _splitRatio - 16,
+          left: 0,
+          right: 0,
+          child: GestureDetector(
+            onVerticalDragUpdate: _onDragUpdate,
+            onVerticalDragEnd: _onDragEnd,
+            child: DragHandle(),
+          ),
+        ),
+
+        // ── Layer 3: Top bar (always visible, translucent) ──
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: SafeArea(
+            child: TopBar(
+              onSettingsTap: _openSettings,
+              onProfileTap: _openProfile,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+```
+
+### Games Panel Layout
+
+The games panel is a frosted-glass surface containing all game selection UI:
 
 ```
 ┌──────────────────────────────────┐
-│ [🌐]                    [⚙️] [👤] │  ← Top bar (translucent)
-│                                  │     Language, Settings, Profile
 │                                  │
-│     ╭─────────────────────╮      │
-│     │    G E O P L A Y    │      │  ← App title (frosted glass card)
-│     │  Master the globe.  │      │
-│     ╰─────────────────────╯      │
+│  ── drag handle pill ──          │  ← Visible at panel top
 │                                  │
-│                                  │  ← Globe visible in the gap
+│    G E O P L A Y                │  ← Title (scales down in 50/50)
+│    Master the globe.             │
 │                                  │
-│ ┌──────────────────────────────┐ │
-│ │  [ Easy ] [Medium] [ Hard ] │ │  ← Difficulty pills
-│ │                              │ │
-│ │ [🌍All][🇪🇺][🌏][🌍][🌎][🌎]    │ │  ← Continent chips
-│ │                              │ │
-│ │ ┌───────────────────────────┐│ │
-│ │ │ 🔗 Connect Countries      ││ │  ← Scrollable game list
-│ │ │    2-3 countries · 90s    ││ │     (frosted glass cards)
-│ │ └───────────────────────────┘│ │
-│ │ ┌───────────────────────────┐│ │
-│ │ │ 🗺️ Find the Country       ││ │
-│ │ │  5 rounds · 30s · famous  ││ │  ← Pool label changes
-│ │ └───────────────────────────┘│ │     with difficulty
-│ │ ┌───────────────────────────┐│ │
-│ │ │ 🏁 Flag Sprint            ││ │
-│ │ │  60s · well-known         ││ │
-│ │ └───────────────────────────┘│ │
-│ │ ┌───────────────────────────┐│ │
-│ │ │ 📍 Find on Map            ││ │
-│ │ │  90s · well-known         ││ │
-│ │ └───────────────────────────┘│ │
-│ │ ┌───────────────────────────┐│ │
-│ │ │ 🃏 Flashcards             ││ │
-│ │ │  Study · no timer · learn ││ │  ← Study mode
-│ │ └───────────────────────────┘│ │
-│ │         ... more games       │ │
-│ └──────────────────────────────┘ │
+│  [ Easy ] [ Medium ] [ Hard ]   │  ← Difficulty selector
+│                                  │
+│  [🌍All][🇪🇺][🌏][🌍][🌎][🌎]      │  ← Continent filter
+│                                  │
+│  ┌────────────────────────────┐  │
+│  │ 🔗 Connect Countries       │  │  ← Game cards (scrollable)
+│  │    2-3 countries · 90s     │  │
+│  └────────────────────────────┘  │
+│  ┌────────────────────────────┐  │
+│  │ 🗺️ Find the Country        │  │
+│  │    5 rounds · 30s · famous │  │
+│  └────────────────────────────┘  │
+│  ┌────────────────────────────┐  │
+│  │ 🏁 Flag Sprint             │  │
+│  │    60s · well-known        │  │
+│  └────────────────────────────┘  │
+│  ┌────────────────────────────┐  │
+│  │ ⚡ Capital Clash            │  │
+│  └────────────────────────────┘  │
+│  ┌────────────────────────────┐  │
+│  │ ⚔️ Border Blitz             │  │
+│  └────────────────────────────┘  │
+│  ┌────────────────────────────┐  │
+│  │ 📍 Find on Map             │  │
+│  │    90s · well-known        │  │
+│  └────────────────────────────┘  │
+│  ┌────────────────────────────┐  │
+│  │ 🃏 Flashcards              │  │
+│  │    Study · no timer        │  │
+│  └────────────────────────────┘  │
 │                                  │
 │       GeoPlay — v1.0.0          │
 └──────────────────────────────────┘
 ```
 
-### Globe Behavior on Home
+In default 50/50 state, only the title, selectors, and 2-3 game cards are visible. The user scrolls within the panel to see more, or drags up to Play mode for the full list.
 
-- **Idle rotation**: Globe slowly rotates (~2° per second, bearing only)
-- **Touch**: User can freely spin/zoom the globe behind the overlay
-- **Continent selection**: Tapping a continent chip → camera smoothly flies to that continent. The globe shows the selected region prominently behind the semi-transparent game list.
-- **Country tap → Wiki Card**: When the user taps a country on the visible globe area (above the game list), the Country Card bottom sheet slides up with that country's wiki info. This transforms the home screen into an explorable atlas. Country labels are visible on the home globe (unlike during Find on Map gameplay).
-- **Game selection**: Tapping a game card → home overlay fades out (300ms) → camera flies to relevant position → countdown begins
+### Game Launch Transition
+
+When the user taps a game card:
+
+1. **Games panel slides down** off screen (300ms ease-out)
+2. **Globe expands** to full screen simultaneously
+3. **Camera flies** to the relevant position (continent zoom or country pair)
+4. **Countdown overlay** appears (3-2-1)
+5. **Game UI overlays** slide in from bottom/top
+
+When returning from a game:
+
+1. **Game overlay fades out**
+2. **Camera pulls back** to the default home view
+3. **Games panel slides up** from the bottom, globe shrinks to the remembered split ratio
+4. Home screen restored to the state before the game launched
+
+### Explore Mode — Country Card Interaction
+
+In Explore mode (globe ~90%), tapping a country triggers:
+
+1. Map controller queries `getCountryAtPoint(tapPosition)` → ISO code
+2. Country briefly highlights (accent flash, 200ms)
+3. Camera subtly centers on the tapped country (300ms fly-to)
+4. Country Card bottom sheet slides up (DraggableScrollableSheet)
+5. Card shows: flag, name, all wiki data, personal progress, action buttons
+6. Dismissing the card (swipe down) returns to explore mode
+7. "Fly to Country" button centers camera + slight zoom
+8. "Study Flashcards" button transitions to flashcard mode for that country's continent
 
 ### Difficulty-Aware Game Cards
 
@@ -1030,18 +1238,38 @@ Each game card shows a **pool label** that changes based on the selected difficu
 
 ### Frosted Glass Aesthetic
 
-All overlay cards use:
+All overlay cards and the games panel use:
 ```dart
 ClipRRect(
-  borderRadius: BorderRadius.circular(16),
+  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
   child: BackdropFilter(
     filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
     child: Container(
-      color: theme.surface.withOpacity(0.75),  // 75% opacity
+      color: theme.surface.withOpacity(0.85),  // 85% opacity for readability
       child: content,
     ),
   ),
 )
+```
+
+### Drag Handle Widget
+
+```dart
+class DragHandle extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        width: 40,
+        height: 5,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(2.5),
+        ),
+      ),
+    );
+  }
+}
 ```
 
 ---
@@ -1402,7 +1630,13 @@ List<String> filterSuggestions(String input, List<String> allNames) {
 | Flashcard swipe right | Slide right + rotate + fade | 300ms | `flutter_animate` `.slideX().rotate().fadeOut()` |
 | Flashcard swipe left | Slide left + rotate + fade | 300ms | Same, opposite direction |
 | Country Card slide up | Bottom sheet spring | 400ms | `showModalBottomSheet` with spring curve |
-| Home → Game transition | Overlay fade out + camera fly | 300ms + 1200ms | Parallel: widget fade, camera animate |
+| Home split drag | Globe + panel resize in real-time | Real-time | `GestureDetector` + animated positioned |
+| Home split snap | Spring physics to snap stop | ~400ms (spring) | `SpringSimulation` with mass 1.0, stiffness 500, damping 30 |
+| Globe tap → Explore | Split animates 50/50 → 90/10 | ~400ms (spring) | Same spring; globe labels fade in 200ms |
+| Explore → Default | Split animates 90/10 → 50/50 | ~400ms (spring) | Pill tap or swipe up triggers snap |
+| Globe resize zoom | Camera zoom adapts to panel size | Continuous | Smaller panel → wider zoom (never crops globe) |
+| Home → Game transition | Games panel slides down + globe expands + camera fly | 300ms + 1200ms | Parallel: panel slide, globe expand, camera animate |
+| Game → Home return | Game overlay fades + camera pulls back + panel slides up | 300ms + 800ms | Reverse of launch |
 | Flag image swap | Cross-fade with slight scale | 200ms | `AnimatedSwitcher` |
 | Timer warning | Pulse scale + color shift | Continuous when ≤10s | `AnimationController` repeat |
 
@@ -1416,6 +1650,8 @@ List<String> filterSuggestions(String input, List<String> allNames) {
 | Streak milestone (×2, ×3...) | Success pattern | `HapticFeedback.mediumImpact()` × 2 |
 | Timer warning (≤5s) | Tick per second | `HapticFeedback.selectionClick()` |
 | Game complete | Success notification | `HapticFeedback.heavyImpact()` + delay + `lightImpact()` |
+| Home split snap | Selection click | `HapticFeedback.selectionClick()` |
+| Globe tap → Explore | Light impact | `HapticFeedback.lightImpact()` |
 | Flashcard reveal | Light impact | `HapticFeedback.lightImpact()` |
 | Flashcard swipe (known) | Selection click | `HapticFeedback.selectionClick()` |
 | Flashcard swipe (review) | Light impact | `HapticFeedback.lightImpact()` |
@@ -1674,7 +1910,10 @@ geoplay_mobile/
 │   │
 │   ├── screens/                          # Overlay screens (over the map)
 │   │   ├── home/
-│   │   │   ├── home_overlay.dart         # Game selection
+│   │   │   ├── home_screen.dart          # Split-screen controller (3 states)
+│   │   │   ├── home_split_controller.dart# Snap stops, spring physics, ratios
+│   │   │   ├── games_panel.dart          # Bottom panel: games list + selectors
+│   │   │   ├── drag_handle.dart          # Draggable divider pill widget
 │   │   │   ├── game_card.dart            # Individual game card
 │   │   │   ├── difficulty_selector.dart
 │   │   │   └── continent_selector.dart
@@ -1844,7 +2083,7 @@ abstract class GameOverlay extends ConsumerWidget {
 1. **Engine**: Create `lib/engines/new_game_engine.dart` — pure Dart, no imports from Flutter. Use `getCountryPool(difficulty, continent)` from `country_tiers.dart` to filter the country pool by tier.
 2. **Provider**: Add a `StateNotifierProvider` in `lib/providers/game_providers.dart`
 3. **Overlay**: Create `lib/screens/game/new_game_overlay.dart` — extends `GameOverlay`
-4. **Registration**: Add to the game list in `home_overlay.dart` — one entry with title, description, icon, accent color, route, and difficulty-aware info string (include `poolLabel`)
+4. **Registration**: Add to the game list in `games_panel.dart` — one entry with title, description, icon, accent color, route, and difficulty-aware info string (include `poolLabel`)
 5. **i18n**: Add translation keys to all 7 ARB files
 6. **Config**: Add difficulty configuration constants
 
@@ -1878,10 +2117,13 @@ Each of these is: one engine file, one overlay file, one provider, a few i18n ke
 This specification describes a **globe-first mobile app** where:
 
 - The **3D Mapbox globe is always visible** and acts as the canvas for all games
+- **Split-screen home** puts the globe and games side by side — tap the globe to enter Explore mode (atlas + wiki), drag up to enter Play mode (full game list), with spring-physics transitions between three states
+- **Any tap on the globe** in default 50/50 mode expands to Explore mode — the globe is too small in half view for precise country taps, so every touch means "show me more"
+- **Small screen adaptive** — default split shifts to 35/65 (globe/games) on phones <5.5", giving games more room while keeping the globe inviting
 - **Flutter** provides pixel-perfect cross-platform UI with GPU-composited overlays
 - **7 modes** (6 competitive games + Flashcard study mode), each with a unique relationship with the map
 - **Country Wiki** with extended data (population, area, language, currency, GDP) acts as the single source of truth — powering games, the Country Card, and future data-driven game modes
-- **Country Card** turns the home globe into an explorable atlas — tap any country to learn about it. Appears in post-game review to close the learn → play → verify → remember loop
+- **Country Card** appears in Explore mode when tapping a country — transforms the home screen into an explorable atlas. Also appears in post-game review to close the learn → play → verify → remember loop
 - **Flashcard study mode** provides pressure-free learning with Tinder-style swipe mechanics, 6 card types (flag, silhouette, capital, map shape), and globe integration
 - **Country tier system** makes difficulty meaningful — Easy shows well-known countries (~55), Medium adds regional ones (~120), Hard includes all 213 down to micro-states
 - **Personal progress tracking** per country — "You've identified 140/213 flags" — drives completionism and retention
