@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   createBorderBlitzGame,
@@ -13,7 +13,7 @@ import {
   getNeighborsForAnchor,
 } from "@/lib/game-engine/border-blitz";
 import { getAllCountryNames } from "@/data/countries";
-import { CountrySilhouette } from "@/components/map/CountrySilhouette";
+import { WorldMap, type MapHighlight } from "@/components/map/WorldMap";
 import type { BorderBlitzGameState, Continent, Difficulty } from "@/lib/game-engine/types";
 import { useTranslation } from "@/lib/i18n/context";
 
@@ -165,6 +165,8 @@ export function BorderBlitzGame({ difficulty, continent, onGoHome }: BorderBlitz
       e.preventDefault();
       if (selectedIndex >= 0 && suggestions[selectedIndex]) {
         handleSubmit(suggestions[selectedIndex]);
+      } else if (suggestions.length > 0 && showSuggestions) {
+        handleSubmit(suggestions[0]);
       } else {
         handleSubmit();
       }
@@ -172,6 +174,68 @@ export function BorderBlitzGame({ difficulty, continent, onGoHome }: BorderBlitz
       setShowSuggestions(false);
     }
   };
+
+  // ── Build map data from game state ──
+  const allNeighbors = useMemo(
+    () => (gameState ? getNeighborsForAnchor(gameState.anchorCode) : []),
+    [gameState?.anchorCode]
+  );
+
+  const focusRegion = useMemo(
+    () => (gameState ? [gameState.anchorCode, ...allNeighbors] : []),
+    [gameState?.anchorCode, allNeighbors]
+  );
+
+  const isResolution = gameState?.phase === "resolution";
+
+  const highlights: MapHighlight[] = useMemo(() => {
+    if (!gameState) return [];
+    const h: MapHighlight[] = [
+      // Anchor = purple
+      { code: gameState.anchorCode, color: "#8b5cf6" },
+      // Found neighbors: green or amber for hinted
+      ...gameState.foundNeighbors.map((code) => ({
+        code,
+        color: gameState.hintedNeighbors.includes(code) ? "#f59e0b" : "#22c55e",
+      })),
+    ];
+    // Resolution: show missed neighbors in semi-transparent red
+    if (isResolution) {
+      const foundSet = new Set(gameState.foundNeighbors);
+      for (const code of allNeighbors) {
+        if (!foundSet.has(code)) {
+          h.push({ code, color: "rgba(239, 68, 68, 0.5)" });
+        }
+      }
+    }
+    return h;
+  }, [gameState, allNeighbors, isResolution]);
+
+  const mapLabels = useMemo(() => {
+    if (!gameState) return [];
+    const labels: { code: string; color: string; name: string }[] = [
+      // Anchor label
+      { code: gameState.anchorCode, color: "#c4b5fd", name: countryName(gameState.anchorCode) },
+      // Found neighbor labels
+      ...gameState.foundNeighbors.map((code) => ({
+        code,
+        color: gameState.hintedNeighbors.includes(code) ? "#fbbf24" : "#86efac",
+        name: countryName(code),
+      })),
+    ];
+    // Resolution: label missed neighbors
+    if (isResolution) {
+      const foundSet = new Set(gameState.foundNeighbors);
+      for (const code of allNeighbors) {
+        if (!foundSet.has(code)) {
+          labels.push({ code, color: "#fca5a5", name: countryName(code) });
+        }
+      }
+    }
+    return labels;
+    // countryName depends on locale; include it for reactivity
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameState, allNeighbors, isResolution, locale]);
 
   // ── Loading ──
   if (!gameState) {
@@ -213,21 +277,60 @@ export function BorderBlitzGame({ difficulty, continent, onGoHome }: BorderBlitz
   // ── Resolution ──
   if (gameState.phase === "resolution") {
     const stats = getBorderBlitzStats(gameState);
+
     return (
-      <div className="min-h-dvh bg-[#0a0e1a] flex items-center justify-center p-4">
+      <div className="min-h-dvh bg-[#0a0e1a] flex flex-col items-center justify-start p-4 overflow-auto">
         <motion.div
-          className="bg-[#111827] border border-[#1e293b] rounded-2xl p-6 sm:p-8 max-w-lg w-full space-y-6"
+          className="bg-[#111827] border border-[#1e293b] rounded-2xl p-4 sm:p-6 max-w-xl w-full space-y-4 my-auto"
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", stiffness: 200 }}
         >
+          {/* Header */}
           <div className="text-center space-y-1">
             <div className="text-sm uppercase tracking-[0.3em] text-[#94a3b8] font-semibold">
               {t("borderBlitz.title")}
             </div>
+            <div className="text-lg font-bold text-[#f1f5f9]">
+              {countryName(gameState.anchorCode)}
+            </div>
             <div className="text-sm text-[#475569]">
               {stats.allFound ? t("borderBlitz.allFound") : t("resolution.timeUp")}
             </div>
+          </div>
+
+          {/* Map showing anchor + found + missed */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+          >
+            <WorldMap
+              highlights={highlights}
+              focusRegion={focusRegion}
+              countryLabels={mapLabels}
+              className="w-full max-h-[35dvh]"
+            />
+          </motion.div>
+
+          {/* Legend */}
+          <div className="flex items-center justify-center gap-4 text-[10px] sm:text-xs text-[#94a3b8]">
+            <span className="flex items-center gap-1">
+              <span className="inline-block w-3 h-3 rounded-sm bg-[#8b5cf6]" /> {t("borderBlitz.findNeighborsOf").replace(":", "")}
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="inline-block w-3 h-3 rounded-sm bg-[#22c55e]" /> {t("flags.correct")}
+            </span>
+            {gameState.hintedNeighbors.length > 0 && (
+              <span className="flex items-center gap-1">
+                <span className="inline-block w-3 h-3 rounded-sm bg-[#f59e0b]" /> {t("borderBlitz.hintsLabel")}
+              </span>
+            )}
+            {stats.found < stats.total && (
+              <span className="flex items-center gap-1">
+                <span className="inline-block w-3 h-3 rounded-sm bg-[#ef4444] opacity-50" /> {t("resolution.missed")}
+              </span>
+            )}
           </div>
 
           {/* Score */}
@@ -237,7 +340,7 @@ export function BorderBlitzGame({ difficulty, continent, onGoHome }: BorderBlitz
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, type: "spring", stiffness: 300 }}
           >
-            <div className="text-6xl font-black tabular-nums text-[#8b5cf6]">{stats.score}</div>
+            <div className="text-5xl font-black tabular-nums text-[#8b5cf6]">{stats.score}</div>
             <div className="text-sm text-[#94a3b8] mt-1">
               {stats.found} / {stats.total} {t("borderBlitz.neighborsFound")}
             </div>
@@ -301,7 +404,7 @@ export function BorderBlitzGame({ difficulty, continent, onGoHome }: BorderBlitz
   }
 
   // ── Playing ──
-  const totalNeighbors = getNeighborsForAnchor(gameState.anchorCode).length;
+  const totalNeighbors = allNeighbors.length;
   const foundCount = gameState.foundNeighbors.length;
   const timerPct = (gameState.timeLeft / gameState.totalDuration) * 100;
   const skipEnabled = gameState.consecutiveWrongAttempts >= 2;
@@ -356,19 +459,24 @@ export function BorderBlitzGame({ difficulty, continent, onGoHome }: BorderBlitz
 
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-auto">
-        {/* Anchor country: name + silhouette */}
-        <div className="flex flex-col items-center py-3 sm:py-4 px-4 gap-2">
+        {/* Anchor country name */}
+        <div className="flex flex-col items-center pt-2 sm:pt-3 px-4 gap-0.5">
           <div className="text-xs uppercase tracking-wider text-[#94a3b8] font-semibold">
             {t("borderBlitz.findNeighborsOf")}
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-[#f1f5f9]">
+          <div className="text-xl sm:text-2xl font-black text-[#f1f5f9]">
             {countryName(gameState.anchorCode)}
           </div>
-          <div className="w-32 h-24 sm:w-40 sm:h-28 shrink-0">
-            <CountrySilhouette
-              countryCode={gameState.anchorCode}
-              size={160}
-              className="w-full h-full max-h-[20dvh]"
+        </div>
+
+        {/* Zoomed world map showing anchor region */}
+        <div className="flex-1 flex items-center justify-center px-2 sm:px-4 py-2 min-h-0">
+          <div className="w-full max-w-2xl">
+            <WorldMap
+              highlights={highlights}
+              focusRegion={focusRegion}
+              countryLabels={mapLabels}
+              className="w-full max-h-[45dvh]"
             />
           </div>
         </div>
@@ -387,50 +495,6 @@ export function BorderBlitzGame({ difficulty, continent, onGoHome }: BorderBlitz
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Found neighbors: grid of silhouettes */}
-        {gameState.foundNeighbors.length > 0 && (
-          <motion.div
-            className="px-4 pb-3"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <div className="text-xs uppercase tracking-wider text-[#94a3b8] font-semibold mb-2">
-              {t("borderBlitz.revealed")}
-            </div>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
-              <AnimatePresence mode="popLayout">
-                {gameState.foundNeighbors.map((code) => {
-                  const isHinted = gameState.hintedNeighbors.includes(code);
-                  return (
-                    <motion.div
-                      key={code}
-                      className="flex flex-col items-center"
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                    >
-                      <div className={`w-14 h-12 sm:w-16 sm:h-14 rounded-lg overflow-hidden ${
-                        isHinted ? "bg-[#f59e0b]/20 ring-1 ring-[#f59e0b]/40" : "bg-[#1e293b]"
-                      }`}>
-                        <CountrySilhouette
-                          countryCode={code}
-                          size={80}
-                          className="w-full h-full"
-                        />
-                      </div>
-                      <span className={`text-[10px] sm:text-xs mt-0.5 truncate max-w-full text-center ${
-                        isHinted ? "text-[#f59e0b]" : "text-[#94a3b8]"
-                      }`}>
-                        {countryName(code)}
-                        {isHinted && " 💡"}
-                      </span>
-                    </motion.div>
-                  );
-                })}
-              </AnimatePresence>
-            </div>
-          </motion.div>
-        )}
 
         {/* Input area */}
         <div className="mt-auto bg-[#0a0e1a]/95 backdrop-blur-sm border-t border-[#1e293b] px-3 py-2 sm:px-4 sm:py-4">

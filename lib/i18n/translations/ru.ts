@@ -21,6 +21,8 @@ export const ru: Translations = {
   "home.capitalsDesc": "Назовите столицы стран и страны по столицам. В обоих направлениях, на время.",
   "home.borderBlitzTitle": "Граница Блиц",
   "home.borderBlitzDesc": "Показываем страну. Введи всех её соседей. Каждый верный ответ открывает силуэт.",
+  "home.mapQuizTitle": "Найди на Карте",
+  "home.mapQuizDesc": "Видишь название страны. Кликни по ней на карте мира. Скорость и точность решают.",
 
   "difficulty.easy": "Легко",
   "difficulty.easyDesc": "2-3 страны расстояние",
@@ -63,6 +65,7 @@ export const ru: Translations = {
   "resolution.timeoutPenalty": "Штраф за время",
   "resolution.efficiency": "Эффективность",
   "resolution.moves": "ходов",
+  "resolution.missed": "Не найдены",
 
   "rating.perfect": "ИДЕАЛЬНО",
   "rating.great": "ОТЛИЧНО",
@@ -134,4 +137,10 @@ export const ru: Translations = {
   "borderBlitz.hintsLabel": "Подсказки",
   "borderBlitz.skipsLabel": "Пропуски",
   "borderBlitz.neighborsLabel": "соседей",
+
+  "mapQuiz.title": "Найди на Карте",
+  "mapQuiz.getReady": "Готовься!",
+  "mapQuiz.find": "Найди эту страну",
+  "mapQuiz.skip": "Пропустить",
+  "mapQuiz.skipped": "Пропущено",
 };

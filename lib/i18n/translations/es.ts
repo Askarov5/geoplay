@@ -21,6 +21,8 @@ export const es: Translations = {
   "home.capitalsDesc": "Nombra capitales de países y países de capitales. En ambas direcciones, bajo presión.",
   "home.borderBlitzTitle": "Border Blitz",
   "home.borderBlitzDesc": "Ve un país. Escribe todos sus vecinos. Cada acierto revela una silueta.",
+  "home.mapQuizTitle": "Busca en el Mapa",
+  "home.mapQuizDesc": "Ve el nombre de un país. Haz clic en él en el mapa. Velocidad y precisión ganan.",
 
   "difficulty.easy": "Fácil",
   "difficulty.easyDesc": "2-3 países de distancia",
@@ -63,6 +65,7 @@ export const es: Translations = {
   "resolution.timeoutPenalty": "Penalización por tiempo",
   "resolution.efficiency": "Eficiencia",
   "resolution.moves": "movimientos",
+  "resolution.missed": "Faltantes",
 
   "rating.perfect": "PERFECTO",
   "rating.great": "GENIAL",
@@ -134,4 +137,10 @@ export const es: Translations = {
   "borderBlitz.hintsLabel": "Pistas",
   "borderBlitz.skipsLabel": "Saltos",
   "borderBlitz.neighborsLabel": "vecinos",
+
+  "mapQuiz.title": "Busca en el Mapa",
+  "mapQuiz.getReady": "¡Prepárate!",
+  "mapQuiz.find": "Encuentra este país",
+  "mapQuiz.skip": "Saltar",
+  "mapQuiz.skipped": "Saltado",
 };

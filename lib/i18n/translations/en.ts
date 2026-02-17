@@ -23,6 +23,8 @@ export const en: Translations = {
   "home.capitalsDesc": "Name capitals from countries and countries from capitals. Both ways, under pressure.",
   "home.borderBlitzTitle": "Border Blitz",
   "home.borderBlitzDesc": "See a country. Type all its neighbors. Each correct answer reveals a silhouette.",
+  "home.mapQuizTitle": "Find on Map",
+  "home.mapQuizDesc": "See a country name. Click it on the world map. Speed and accuracy win.",
 
   // Difficulty
   "difficulty.easy": "Easy",
@@ -70,6 +72,7 @@ export const en: Translations = {
   "resolution.timeoutPenalty": "Timeout penalty",
   "resolution.efficiency": "Efficiency",
   "resolution.moves": "moves",
+  "resolution.missed": "Missed",
 
   // Ratings
   "rating.perfect": "PERFECT",
@@ -148,4 +151,10 @@ export const en: Translations = {
   "borderBlitz.hintsLabel": "Hints",
   "borderBlitz.skipsLabel": "Skips",
   "borderBlitz.neighborsLabel": "neighbors",
+
+  "mapQuiz.title": "Find on Map",
+  "mapQuiz.getReady": "Get ready!",
+  "mapQuiz.find": "Find this country",
+  "mapQuiz.skip": "Skip",
+  "mapQuiz.skipped": "Skipped",
 };

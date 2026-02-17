@@ -42,6 +42,8 @@ export interface Translations {
   "home.capitalsDesc": string;
   "home.borderBlitzTitle": string;
   "home.borderBlitzDesc": string;
+  "home.mapQuizTitle": string;
+  "home.mapQuizDesc": string;
 
   // ─── Difficulty ───
   "difficulty.easy": string;
@@ -89,6 +91,7 @@ export interface Translations {
   "resolution.timeoutPenalty": string;
   "resolution.efficiency": string;
   "resolution.moves": string;
+  "resolution.missed": string;
 
   // ─── Ratings ───
   "rating.perfect": string;
@@ -168,4 +171,11 @@ export interface Translations {
   "borderBlitz.hintsLabel": string;
   "borderBlitz.skipsLabel": string;
   "borderBlitz.neighborsLabel": string;
+
+  // ─── Map Quiz Game ───
+  "mapQuiz.title": string;
+  "mapQuiz.getReady": string;
+  "mapQuiz.find": string;
+  "mapQuiz.skip": string;
+  "mapQuiz.skipped": string;
 }

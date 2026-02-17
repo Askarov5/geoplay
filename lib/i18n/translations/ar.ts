@@ -21,6 +21,8 @@ export const ar: Translations = {
   "home.capitalsDesc": "اذكر عواصم الدول والدول من عواصمها. في الاتجاهين، تحت الضغط.",
   "home.borderBlitzTitle": "حدود البرق",
   "home.borderBlitzDesc": "شاهد دولة. اكتب كل جيرانها. كل إجابة صحيحة تكشف شكلاً.",
+  "home.mapQuizTitle": "ابحث على الخريطة",
+  "home.mapQuizDesc": "شاهد اسم دولة. انقر عليها على الخريطة. السرعة والدقة هما المفتاح.",
 
   "difficulty.easy": "سهل",
   "difficulty.easyDesc": "2-3 دول مسافة",
@@ -63,6 +65,7 @@ export const ar: Translations = {
   "resolution.timeoutPenalty": "عقوبة انتهاء الوقت",
   "resolution.efficiency": "الكفاءة",
   "resolution.moves": "خطوات",
+  "resolution.missed": "لم يتم العثور عليها",
 
   "rating.perfect": "مثالي",
   "rating.great": "رائع",
@@ -134,4 +137,10 @@ export const ar: Translations = {
   "borderBlitz.hintsLabel": "تلميحات",
   "borderBlitz.skipsLabel": "تخطي",
   "borderBlitz.neighborsLabel": "جيران",
+
+  "mapQuiz.title": "ابحث على الخريطة",
+  "mapQuiz.getReady": "استعد!",
+  "mapQuiz.find": "جد هذه الدولة",
+  "mapQuiz.skip": "تخطي",
+  "mapQuiz.skipped": "تم التخطي",
 };

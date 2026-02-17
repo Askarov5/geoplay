@@ -21,6 +21,8 @@ export const fr: Translations = {
   "home.capitalsDesc": "Nommez les capitales des pays et les pays des capitales. Dans les deux sens, sous pression.",
   "home.borderBlitzTitle": "Border Blitz",
   "home.borderBlitzDesc": "Voici un pays. Saisis tous ses voisins. Chaque bonne réponse révèle une silhouette.",
+  "home.mapQuizTitle": "Trouve sur la Carte",
+  "home.mapQuizDesc": "Un nom de pays s'affiche. Clique dessus sur la carte. Vitesse et précision comptent.",
 
   "difficulty.easy": "Facile",
   "difficulty.easyDesc": "2-3 pays d'écart",
@@ -63,6 +65,7 @@ export const fr: Translations = {
   "resolution.timeoutPenalty": "Pénalité temps",
   "resolution.efficiency": "Efficacité",
   "resolution.moves": "coups",
+  "resolution.missed": "Manqués",
 
   "rating.perfect": "PARFAIT",
   "rating.great": "EXCELLENT",
@@ -134,4 +137,10 @@ export const fr: Translations = {
   "borderBlitz.hintsLabel": "Indices",
   "borderBlitz.skipsLabel": "Sauts",
   "borderBlitz.neighborsLabel": "voisins",
+
+  "mapQuiz.title": "Trouve sur la Carte",
+  "mapQuiz.getReady": "Prêt !",
+  "mapQuiz.find": "Trouve ce pays",
+  "mapQuiz.skip": "Passer",
+  "mapQuiz.skipped": "Passé",
 };

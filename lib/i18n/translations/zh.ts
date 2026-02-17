@@ -21,6 +21,8 @@ export const zh: Translations = {
   "home.capitalsDesc": "说出国家的首都，或说出首都所在的国家。双向挑战，限时作答。",
   "home.borderBlitzTitle": "边境闪电",
   "home.borderBlitzDesc": "看国家轮廓与名称，输入其所有邻国。每答对一个即显示该国轮廓。",
+  "home.mapQuizTitle": "地图找国",
+  "home.mapQuizDesc": "看到国家名称，在世界地图上点击它。速度和准确度决定胜负。",
 
   "difficulty.easy": "简单",
   "difficulty.easyDesc": "相隔2-3个国家",
@@ -63,6 +65,7 @@ export const zh: Translations = {
   "resolution.timeoutPenalty": "超时惩罚",
   "resolution.efficiency": "效率",
   "resolution.moves": "步",
+  "resolution.missed": "未找到",
 
   "rating.perfect": "完美",
   "rating.great": "优秀",
@@ -134,4 +137,10 @@ export const zh: Translations = {
   "borderBlitz.hintsLabel": "提示",
   "borderBlitz.skipsLabel": "跳过",
   "borderBlitz.neighborsLabel": "个邻国",
+
+  "mapQuiz.title": "地图找国",
+  "mapQuiz.getReady": "准备！",
+  "mapQuiz.find": "找到这个国家",
+  "mapQuiz.skip": "跳过",
+  "mapQuiz.skipped": "已跳过",
 };

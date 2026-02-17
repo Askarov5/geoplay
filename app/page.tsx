@@ -12,6 +12,7 @@ import {
   FLAG_SPRINT_CONFIGS,
   CAPITAL_CLASH_CONFIGS,
   BORDER_BLITZ_CONFIGS,
+  MAP_QUIZ_CONFIGS,
 } from "@/lib/game-engine/types";
 import { useTranslation } from "@/lib/i18n/context";
 import { LOCALES } from "@/lib/i18n/types";
@@ -53,6 +54,7 @@ export default function HomePage() {
   const flagsCfg = FLAG_SPRINT_CONFIGS[selectedDifficulty];
   const capitalsCfg = CAPITAL_CLASH_CONFIGS[selectedDifficulty];
   const borderBlitzCfg = BORDER_BLITZ_CONFIGS[selectedDifficulty];
+  const mapQuizCfg = MAP_QUIZ_CONFIGS[selectedDifficulty];
 
   const gameModes = [
     {
@@ -104,6 +106,16 @@ export default function HomePage() {
       available: true,
       path: "/games/border-blitz",
       difficultyInfo: `${borderBlitzCfg.minNeighbors}–${borderBlitzCfg.maxNeighbors >= 99 ? "14" : borderBlitzCfg.maxNeighbors} ${t("borderBlitz.neighborsLabel")} · ${borderBlitzCfg.totalTime}s${borderBlitzCfg.wrongPenalty > 0 ? ` · ${t("flags.diffWrong")} -${borderBlitzCfg.wrongPenalty}` : ""}`,
+    },
+    {
+      id: "mapQuiz",
+      title: t("home.mapQuizTitle"),
+      description: t("home.mapQuizDesc"),
+      icon: "📍",
+      accentColor: "#06b6d4",
+      available: true,
+      path: "/games/map-quiz",
+      difficultyInfo: `${mapQuizCfg.totalTime}s${mapQuizCfg.wrongPenalty > 0 ? ` · ${t("flags.diffWrong")} -${mapQuizCfg.wrongPenalty}` : ""}`,
     },
   ];
 

@@ -373,3 +373,69 @@ export const BORDER_BLITZ_CONFIGS: Record<Difficulty, BorderBlitzDifficultyConfi
     maxNeighbors: 99,
   },
 };
+
+// ─────────────────────────────────────────────
+// Map Quiz Game ("Find on Map")
+// ─────────────────────────────────────────────
+
+/** A single attempt in Map Quiz */
+export interface MapQuizAttempt {
+  targetCode: string;       // correct country code
+  clickedCode: string | null; // what the player clicked
+  correct: boolean;
+  timeMs: number;           // how long the player took
+}
+
+/** Full state of a Map Quiz game */
+export interface MapQuizGameState {
+  phase: "countdown" | "playing" | "resolution";
+  difficulty: Difficulty;
+  continent: Continent;
+  countryQueue: string[];     // shuffled country codes to find
+  currentIndex: number;       // index into countryQueue
+  attempts: MapQuizAttempt[]; // completed attempts
+  score: number;
+  streak: number;             // current consecutive correct
+  bestStreak: number;
+  timeLeft: number;           // seconds remaining
+  totalDuration: number;      // total game time in seconds
+  countdownLeft: number;      // 3-2-1 countdown
+  questionShownAt: number;    // timestamp when current question was displayed
+}
+
+/** Map Quiz difficulty config */
+export interface MapQuizDifficultyConfig {
+  totalTime: number;            // seconds
+  basePoints: number;           // points per correct click
+  streakMultiplierStep: number; // every N streak, multiplier goes up
+  maxMultiplier: number;
+  wrongPenalty: number;         // points lost per wrong click
+  skipPenalty: number;          // points lost per skip
+}
+
+export const MAP_QUIZ_CONFIGS: Record<Difficulty, MapQuizDifficultyConfig> = {
+  easy: {
+    totalTime: 90,
+    basePoints: 10,
+    streakMultiplierStep: 3,
+    maxMultiplier: 3,
+    wrongPenalty: 0,
+    skipPenalty: 0,
+  },
+  medium: {
+    totalTime: 60,
+    basePoints: 10,
+    streakMultiplierStep: 3,
+    maxMultiplier: 4,
+    wrongPenalty: 5,
+    skipPenalty: 0,
+  },
+  hard: {
+    totalTime: 45,
+    basePoints: 10,
+    streakMultiplierStep: 5,
+    maxMultiplier: 5,
+    wrongPenalty: 10,
+    skipPenalty: 5,
+  },
+};

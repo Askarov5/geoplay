@@ -108,6 +108,8 @@ export function CountryInput({
       e.preventDefault();
       if (selectedIndex >= 0 && suggestions[selectedIndex]) {
         handleSubmit(suggestions[selectedIndex]);
+      } else if (suggestions.length > 0 && showSuggestions) {
+        handleSubmit(suggestions[0]);
       } else {
         handleSubmit();
       }

@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState, useMemo, useCallback, memo } from "react";
+import { useEffect, useState, useMemo, useCallback, memo, useRef } from "react";
 import { geoNaturalEarth1, geoPath, geoGraticule, type GeoPermissibleObjects } from "d3-geo";
 import { feature } from "topojson-client";
 import type { Topology, GeometryCollection } from "topojson-specification";
 import type { FeatureCollection, Feature, Geometry } from "geojson";
-import { countryByCode } from "@/data/countries";
+import { countryByCode, countries as countriesData } from "@/data/countries";
 import { useTranslation } from "@/lib/i18n/context";
 
 const TOPO_URL =
@@ -24,6 +24,13 @@ export interface MapHighlight {
   label?: string;
 }
 
+interface ViewBox {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 interface WorldMapProps {
   highlights?: MapHighlight[];
   startCountry?: string;
@@ -33,6 +40,16 @@ interface WorldMapProps {
   showOptimalPath?: boolean;
   wrongFlash?: string | null; // country code to flash red
   className?: string;
+  /** Zoom the viewBox to fit these country codes (plus padding). */
+  focusRegion?: string[];
+  /** Render name labels at these country positions. */
+  countryLabels?: { code: string; color: string; name: string }[];
+  /** When set, countries become clickable and this callback fires with the alpha-2 code. */
+  onCountryClick?: (code: string) => void;
+  /** Enable interactive zoom & pan (scroll wheel, buttons, drag). */
+  enableZoom?: boolean;
+  /** When enableZoom is true, zoom into this continent on mount. */
+  zoomContinent?: string;
 }
 
 // ISO numeric to alpha-2 mapping for the TopoJSON data
@@ -84,6 +101,10 @@ function getAlpha2FromFeature(feature: CountryFeature): string | null {
   return numericToAlpha2[id] || null;
 }
 
+const DEFAULT_VB: ViewBox = { x: 0, y: 0, w: 960, h: 600 };
+const MIN_ZOOM_W = 60;
+const MAX_ZOOM_W = 1400;
+
 const WorldMapInner = ({
   highlights = [],
   startCountry,
@@ -93,10 +114,27 @@ const WorldMapInner = ({
   showOptimalPath = false,
   wrongFlash,
   className = "",
+  focusRegion,
+  countryLabels,
+  onCountryClick,
+  enableZoom,
+  zoomContinent,
 }: WorldMapProps) => {
   const { t, countryName } = useTranslation();
   const [worldData, setWorldData] = useState<FeatureCollection | null>(null);
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
+  const isZoomed = focusRegion && focusRegion.length > 0;
+  const isClickable = !!onCountryClick;
+  const isInteractive = isZoomed || enableZoom;
+
+  // ── Zoom / Pan state ──
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [zoomVB, setZoomVB] = useState<ViewBox | null>(null);
+  const didDragRef = useRef(false);
+  const panStartRef = useRef<{
+    mx: number; my: number;
+    vbX: number; vbY: number; vbW: number; vbH: number;
+  } | null>(null);
 
   useEffect(() => {
     fetch(TOPO_URL)
@@ -122,6 +160,211 @@ const WorldMapInner = ({
   }, [projection]);
 
   const graticule = useMemo(() => geoGraticule(), []);
+
+  // Compute a zoomed viewBox when focusRegion is set.
+  // The first code in focusRegion is treated as the center (anchor).
+  const dynamicViewBox = useMemo(() => {
+    if (!isZoomed) return "0 0 960 600";
+
+    // Project the anchor (first code) — this will be the viewBox center
+    const anchorCountry = countryByCode[focusRegion[0]];
+    const anchorPt = anchorCountry
+      ? projection([anchorCountry.coordinates[1], anchorCountry.coordinates[0]])
+      : null;
+
+    if (!anchorPt) return "0 0 960 600";
+
+    // Find the maximum distance from anchor to any neighbor point
+    let maxDx = 0;
+    let maxDy = 0;
+
+    for (const code of focusRegion) {
+      const country = countryByCode[code];
+      if (!country) continue;
+      const pt = projection([country.coordinates[1], country.coordinates[0]]);
+      if (!pt) continue;
+      maxDx = Math.max(maxDx, Math.abs(pt[0] - anchorPt[0]));
+      maxDy = Math.max(maxDy, Math.abs(pt[1] - anchorPt[1]));
+    }
+
+    const pad = 80;
+    // Half-width and half-height centered on anchor, with padding
+    const halfW = Math.max(maxDx + pad, 80);
+    const halfH = Math.max(maxDy + pad, 60);
+
+    const w = halfW * 2;
+    const h = halfH * 2;
+
+    return `${anchorPt[0] - halfW} ${anchorPt[1] - halfH} ${w} ${h}`;
+  }, [isZoomed, focusRegion, projection]);
+
+  // Parse base viewBox for zoom computations
+  const baseVB = useMemo<ViewBox>(() => {
+    const parts = dynamicViewBox.split(" ").map(Number);
+    return { x: parts[0], y: parts[1], w: parts[2], h: parts[3] };
+  }, [dynamicViewBox]);
+
+  // Ref for base viewBox (accessible in event handlers without stale closures)
+  const baseVBRef = useRef(baseVB);
+  baseVBRef.current = baseVB;
+
+  // ── Continent initial zoom ──
+  const continentVB = useMemo<ViewBox | null>(() => {
+    if (!zoomContinent || zoomContinent === "all") return null;
+    const filtered = countriesData.filter((c) => c.continent === zoomContinent);
+    if (filtered.length === 0) return null;
+
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const c of filtered) {
+      const pt = projection([c.coordinates[1], c.coordinates[0]]);
+      if (!pt) continue;
+      minX = Math.min(minX, pt[0]);
+      minY = Math.min(minY, pt[1]);
+      maxX = Math.max(maxX, pt[0]);
+      maxY = Math.max(maxY, pt[1]);
+    }
+    if (!isFinite(minX)) return null;
+
+    const pad = 50;
+    return {
+      x: minX - pad,
+      y: minY - pad,
+      w: (maxX - minX) + pad * 2,
+      h: (maxY - minY) + pad * 2,
+    };
+  }, [zoomContinent, projection]);
+
+  // Apply initial continent zoom
+  useEffect(() => {
+    if (!enableZoom) return;
+    setZoomVB(continentVB);
+  }, [enableZoom, continentVB]);
+
+  // ── Effective viewBox ──
+  const effectiveVB = enableZoom && zoomVB ? zoomVB : baseVB;
+  const effectiveViewBox = `${effectiveVB.x} ${effectiveVB.y} ${effectiveVB.w} ${effectiveVB.h}`;
+
+  // ── Scroll-wheel zoom (non-passive listener for preventDefault) ──
+  useEffect(() => {
+    if (!enableZoom) return;
+    const el = svgRef.current;
+    if (!el) return;
+
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const rect = el.getBoundingClientRect();
+      const fx = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      const fy = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+      const factor = e.deltaY > 0 ? 1.12 : 1 / 1.12;
+
+      setZoomVB((prev) => {
+        const vb = prev || baseVBRef.current;
+        const newW = Math.max(MIN_ZOOM_W, Math.min(MAX_ZOOM_W, vb.w * factor));
+        const ratio = vb.h / vb.w;
+        const newH = newW * ratio;
+        const px = vb.x + fx * vb.w;
+        const py = vb.y + fy * vb.h;
+        return { x: px - fx * newW, y: py - fy * newH, w: newW, h: newH };
+      });
+    };
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [enableZoom]);
+
+  // ── Drag-to-pan (pointer events on window for smooth dragging) ──
+  useEffect(() => {
+    if (!enableZoom) return;
+
+    const onMove = (e: PointerEvent) => {
+      const pan = panStartRef.current;
+      if (!pan) return;
+
+      const dx = e.clientX - pan.mx;
+      const dy = e.clientY - pan.my;
+
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+        didDragRef.current = true;
+      }
+
+      if (!didDragRef.current) return;
+
+      const svg = svgRef.current;
+      if (!svg) return;
+      const rect = svg.getBoundingClientRect();
+
+      const svgDx = (dx / rect.width) * pan.vbW;
+      const svgDy = (dy / rect.height) * pan.vbH;
+
+      setZoomVB({
+        x: pan.vbX - svgDx,
+        y: pan.vbY - svgDy,
+        w: pan.vbW,
+        h: pan.vbH,
+      });
+    };
+
+    const onUp = () => {
+      panStartRef.current = null;
+    };
+
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    };
+  }, [enableZoom]);
+
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent<SVGSVGElement>) => {
+      if (!enableZoom) return;
+      didDragRef.current = false;
+      const vb = zoomVB || baseVB;
+      panStartRef.current = {
+        mx: e.clientX,
+        my: e.clientY,
+        vbX: vb.x,
+        vbY: vb.y,
+        vbW: vb.w,
+        vbH: vb.h,
+      };
+    },
+    [enableZoom, zoomVB, baseVB]
+  );
+
+  // ── Zoom button handlers ──
+  const handleZoomIn = useCallback(() => {
+    setZoomVB((prev) => {
+      const vb = prev || baseVBRef.current;
+      const factor = 0.7;
+      const newW = Math.max(MIN_ZOOM_W, vb.w * factor);
+      const ratio = vb.h / vb.w;
+      const newH = newW * ratio;
+      const cx = vb.x + vb.w / 2;
+      const cy = vb.y + vb.h / 2;
+      return { x: cx - newW / 2, y: cy - newH / 2, w: newW, h: newH };
+    });
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    setZoomVB((prev) => {
+      const vb = prev || baseVBRef.current;
+      const factor = 1 / 0.7;
+      const newW = Math.min(MAX_ZOOM_W, vb.w * factor);
+      const ratio = vb.h / vb.w;
+      const newH = newW * ratio;
+      const cx = vb.x + vb.w / 2;
+      const cy = vb.y + vb.h / 2;
+      return { x: cx - newW / 2, y: cy - newH / 2, w: newW, h: newH };
+    });
+  }, []);
+
+  const handleZoomReset = useCallback(() => {
+    setZoomVB(continentVB);
+  }, [continentVB]);
 
   // Build highlight lookup
   const highlightMap = useMemo(() => {
@@ -161,8 +404,8 @@ const WorldMapInner = ({
       const highlight = highlightMap.get(alpha2);
       if (highlight) return highlight;
 
-      // Hovered
-      if (hoveredCountry === alpha2) return "#334155";
+      // Hovered (disabled when zoomed, unless clickable or enableZoom)
+      if (hoveredCountry === alpha2 && (!isZoomed || isClickable || enableZoom)) return "#334155";
 
       // Default
       return "#1e293b";
@@ -176,8 +419,31 @@ const WorldMapInner = ({
       wrongFlash,
       highlightMap,
       hoveredCountry,
+      isZoomed,
+      isClickable,
+      enableZoom,
     ]
   );
+
+  // Stroke width adapts to zoom level
+  const strokeWidth = useMemo(() => {
+    if (isZoomed) return "0.3";
+    if (enableZoom && zoomVB) {
+      // Thinner strokes when zoomed in
+      const ratio = zoomVB.w / DEFAULT_VB.w;
+      return String(Math.max(0.1, 0.5 * ratio));
+    }
+    return "0.5";
+  }, [isZoomed, enableZoom, zoomVB]);
+
+  const gratStrokeWidth = useMemo(() => {
+    if (isZoomed) return "0.15";
+    if (enableZoom && zoomVB) {
+      const ratio = zoomVB.w / DEFAULT_VB.w;
+      return String(Math.max(0.05, 0.3 * ratio));
+    }
+    return "0.3";
+  }, [isZoomed, enableZoom, zoomVB]);
 
   if (!worldData) {
     return (
@@ -192,22 +458,29 @@ const WorldMapInner = ({
     );
   }
 
+  const enableHover = !isZoomed || isClickable || enableZoom;
+
   return (
     <div className={`relative overflow-hidden rounded-xl bg-[#0a0e1a] ${className}`}>
       <svg
-        viewBox="0 0 960 600"
-        className="w-full h-auto pt-20"
-        style={{ maxHeight: "70vh" }}
+        ref={svgRef}
+        viewBox={effectiveViewBox}
+        className={`w-full h-auto ${isInteractive ? "" : "pt-20"}${enableZoom ? " touch-none" : ""}`}
+        style={{
+          maxHeight: isInteractive ? undefined : "70vh",
+          cursor: enableZoom ? (panStartRef.current ? "grabbing" : "grab") : undefined,
+        }}
+        onPointerDown={enableZoom ? handlePointerDown : undefined}
       >
         {/* Ocean background */}
-        <rect width="960" height="600" fill="#0a0e1a" />
+        <rect x="-500" y="-500" width="2500" height="2000" fill="#0a0e1a" />
 
         {/* Graticule (grid lines) */}
         <path
           d={pathGenerator(graticule() as GeoPermissibleObjects) || ""}
           fill="none"
           stroke="#1a1f2e"
-          strokeWidth="0.3"
+          strokeWidth={gratStrokeWidth}
         />
 
         {/* Country shapes */}
@@ -223,10 +496,18 @@ const WorldMapInner = ({
               d={d}
               fill={getCountryColor(alpha2)}
               stroke="#0f172a"
-              strokeWidth="0.5"
-              className="map-country"
-              onMouseEnter={() => alpha2 && setHoveredCountry(alpha2)}
-              onMouseLeave={() => setHoveredCountry(null)}
+              strokeWidth={strokeWidth}
+              className={`map-country transition-colors duration-300${isClickable ? " cursor-pointer" : ""}`}
+              onMouseEnter={enableHover ? () => alpha2 && setHoveredCountry(alpha2) : undefined}
+              onMouseLeave={enableHover ? () => setHoveredCountry(null) : undefined}
+              onClick={
+                isClickable && alpha2
+                  ? () => {
+                      if (enableZoom && didDragRef.current) return;
+                      onCountryClick(alpha2);
+                    }
+                  : undefined
+              }
             />
           );
         })}
@@ -249,6 +530,17 @@ const WorldMapInner = ({
           />
         )}
 
+        {/* Custom country labels (e.g. Border Blitz) */}
+        {countryLabels?.map((lbl) => (
+          <CountryLabel
+            key={`lbl-${lbl.code}`}
+            code={lbl.code}
+            projection={projection}
+            color={lbl.color}
+            name={lbl.name}
+          />
+        ))}
+
         {/* Current position indicator */}
         {playerPath.length > 0 && (
           <CurrentPositionMarker
@@ -258,8 +550,37 @@ const WorldMapInner = ({
         )}
       </svg>
 
-      {/* Hovered country tooltip */}
-      {hoveredCountry && countryByCode[hoveredCountry] && (
+      {/* Zoom controls */}
+      {enableZoom && (
+        <div className="absolute bottom-3 right-3 flex flex-col gap-1.5 z-10">
+          <button
+            onClick={handleZoomIn}
+            className="w-9 h-9 flex items-center justify-center bg-[#111827]/90 backdrop-blur-sm border border-[#334155] rounded-lg text-[#f1f5f9] hover:bg-[#1e293b] transition-colors text-lg font-bold select-none"
+            title="Zoom in"
+          >
+            +
+          </button>
+          <button
+            onClick={handleZoomOut}
+            className="w-9 h-9 flex items-center justify-center bg-[#111827]/90 backdrop-blur-sm border border-[#334155] rounded-lg text-[#f1f5f9] hover:bg-[#1e293b] transition-colors text-lg font-bold select-none"
+            title="Zoom out"
+          >
+            −
+          </button>
+          <button
+            onClick={handleZoomReset}
+            className="w-9 h-9 flex items-center justify-center bg-[#111827]/90 backdrop-blur-sm border border-[#334155] rounded-lg text-[#94a3b8] hover:text-[#f1f5f9] hover:bg-[#1e293b] transition-colors text-sm select-none"
+            title="Reset zoom"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+        </div>
+      )}
+
+      {/* Hovered country tooltip (hidden when zoomed or clickable to avoid spoiling) */}
+      {!isZoomed && !isClickable && hoveredCountry && countryByCode[hoveredCountry] && (
         <div className="absolute top-3 right-3 bg-[#111827]/90 backdrop-blur-sm border border-[#334155] text-sm px-3 py-1.5 rounded-lg text-[#f1f5f9]">
           {countryName(hoveredCountry)}
         </div>
