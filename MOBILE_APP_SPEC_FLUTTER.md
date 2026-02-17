@@ -11,22 +11,23 @@
 3. [Architecture — The Persistent Globe](#3-architecture--the-persistent-globe)
 4. [Mapbox Integration Deep Dive](#4-mapbox-integration-deep-dive)
 5. [Map Controller — The Brain](#5-map-controller--the-brain)
-6. [Game Engine Layer (Dart)](#6-game-engine-layer-dart)
-7. [Game Blueprints — How Each Game Lives on the Map](#7-game-blueprints--how-each-game-lives-on-the-map)
-8. [Home Screen — The Living Globe](#8-home-screen--the-living-globe)
-9. [Shared Widget Library](#9-shared-widget-library)
-10. [Theming — Dark & Light Mode](#10-theming--dark--light-mode)
-11. [Internationalization (i18n)](#11-internationalization-i18n)
-12. [Autocomplete Input — Mobile Optimized](#12-autocomplete-input--mobile-optimized)
-13. [Animations & Haptics](#13-animations--haptics)
-14. [Offline Mode (Premium)](#14-offline-mode-premium)
-15. [Monetization & Premium Features](#15-monetization--premium-features)
-16. [Sound Design](#16-sound-design)
-17. [Performance Budget](#17-performance-budget)
-18. [Project Structure](#18-project-structure)
-19. [Dependencies (pubspec.yaml)](#19-dependencies-pubspecyaml)
-20. [Deployment & Distribution](#20-deployment--distribution)
-21. [Future-Proofing — Adding New Games](#21-future-proofing--adding-new-games)
+6. [Country Data & Wiki](#6-country-data--wiki)
+7. [Game Engine Layer (Dart)](#7-game-engine-layer-dart)
+8. [Game Blueprints — How Each Game Lives on the Map](#8-game-blueprints--how-each-game-lives-on-the-map)
+9. [Home Screen — The Living Globe](#9-home-screen--the-living-globe)
+10. [Shared Widget Library](#10-shared-widget-library)
+11. [Theming — Dark & Light Mode](#11-theming--dark--light-mode)
+12. [Internationalization (i18n)](#12-internationalization-i18n)
+13. [Autocomplete Input — Mobile Optimized](#13-autocomplete-input--mobile-optimized)
+14. [Animations & Haptics](#14-animations--haptics)
+15. [Offline Mode (Premium)](#15-offline-mode-premium)
+16. [Monetization & Premium Features](#16-monetization--premium-features)
+17. [Sound Design](#17-sound-design)
+18. [Performance Budget](#18-performance-budget)
+19. [Project Structure](#19-project-structure)
+20. [Dependencies (pubspec.yaml)](#20-dependencies-pubspecyaml)
+21. [Deployment & Distribution](#21-deployment--distribution)
+22. [Future-Proofing — Adding New Games](#22-future-proofing--adding-new-games)
 
 ---
 
@@ -348,7 +349,296 @@ For camera fly-to targets, use the same coordinate database from the web app (21
 
 ---
 
-## 6. Game Engine Layer (Dart)
+## 6. Country Data & Wiki
+
+### The Learning Loop
+
+GeoPlay is not just a game — it's a **learn → play → verify → remember** loop. The Country Wiki is the "learn" piece. It acts as both a reference for users and the **single source of truth** for all game content. Every game pulls data from the same country model.
+
+### Extended Country Model
+
+```dart
+@freezed
+class Country with _$Country {
+  const factory Country({
+    required String code,             // ISO 3166-1 alpha-2 ("DE")
+    required String name,             // English name ("Germany")
+    required String capital,          // English capital ("Berlin")
+    required String continent,        // "Europe"
+    required List<double> coordinates,// [lat, lng]
+    required CountryTier tier,        // 1, 2, or 3
+
+    // ── Wiki Fields (new) ──
+    required int population,          // 83_200_000
+    required int areaKm2,             // 357_022
+    required List<String> languages,  // ["German"]
+    required String currency,         // "Euro (€)"
+    required String currencyCode,     // "EUR"
+    required List<String> neighbors,  // ["DK","PL","CZ","AT","CH","FR","LU","BE","NL"]
+    String? gdpBillions,              // "4260" (optional, updated less frequently)
+    String? drivingSide,              // "right" or "left"
+    String? callingCode,              // "+49"
+  }) = _Country;
+}
+```
+
+### Data Source Strategy
+
+**Bundle a static snapshot** — Do NOT call an API at runtime. Source the data once from:
+- [REST Countries API](https://restcountries.com/) — population, area, languages, currencies, calling codes, borders
+- World Bank / CIA Factbook — GDP figures
+- Existing `data/adjacency.ts` — neighbor relationships (already curated)
+- Manual review for accuracy
+
+The `neighbors` field consolidates the separate adjacency graph into the Country model itself. Island nations with no land borders have an empty list (`[]`). The adjacency graph helper functions (`getNeighbors`, `isValidNeighbor`, BFS, etc.) still exist but read from `country.neighbors` instead of a separate map.
+
+Store as a single Dart file (`country_data.dart`) with all 213 entries. Update yearly with a script.
+
+### Country Card — The Wiki UI
+
+The Country Card is a **bottom sheet** that slides up over the globe. It appears in two contexts:
+
+**Context 1: Tap any country on the home globe**
+When the user is on the home screen and taps a country on the idle globe, the Country Card slides up. This turns the home screen from a menu into an explorable atlas.
+
+**Context 2: Post-game answer review**
+After any game, tapping a country in the results list opens its Country Card. "Got Nigeria wrong? Tap to learn about it." This closes the learning loop.
+
+### Country Card Layout
+
+```
+┌──────────────────────────────────┐
+│  ── drag handle ──               │  ← Bottom sheet
+│                                  │
+│  🇩🇪  Germany                     │  ← Flag + name (large)
+│  Federal Republic of Germany      │  ← Official name
+│                                  │
+│  ┌────────┐ ┌────────┐ ┌──────┐ │
+│  │ 83.2M  │ │357K km²│ │ EU   │ │  ← Quick stats row
+│  │  pop.  │ │  area  │ │cont. │ │
+│  └────────┘ └────────┘ └──────┘ │
+│                                  │
+│  Capital       Berlin            │
+│  Language      German            │
+│  Currency      Euro (€)          │
+│  GDP           $4.26 trillion    │
+│  Calling       +49               │
+│  Drives on     Right             │
+│  Neighbors     9 countries       │  ← Tappable → shows list
+│  Tier          ★ Well-known      │
+│                                  │
+│  ─────────────────────────────── │
+│  📊 Your Progress                │  ← Personal stats (Phase 2)
+│  Flag Sprint   ✅ 3/3 correct    │
+│  Find on Map   ✅ Found in 2.1s  │
+│  Capitals      ✅ Berlin          │
+│  Border Blitz  ✅ Named as nbr   │
+│  Silhouette    ❌ Not yet solved  │
+│                                  │
+│  [ 🗺️ Fly to Country ]           │  ← Camera flies to it
+│  [ 🃏 Study Flashcards ]          │  ← Opens flashcard mode
+└──────────────────────────────────┘
+```
+
+### Country Card Implementation
+
+```dart
+class CountryCard extends ConsumerWidget {
+  final String countryCode;
+
+  // Data comes from the single Country model
+  // Flag image from bundled assets
+  // Localized name from i18n layer
+  // Neighbors from adjacency graph
+  // Personal stats from local persistence (SharedPreferences or Hive)
+}
+
+/// Show the country card from anywhere
+void showCountryCard(BuildContext context, String isoCode) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,        // Full height when needed
+    backgroundColor: Colors.transparent,
+    builder: (_) => DraggableScrollableSheet(
+      initialChildSize: 0.6,
+      minChildSize: 0.3,
+      maxChildSize: 0.9,
+      builder: (_, controller) => CountryCard(
+        countryCode: isoCode,
+        scrollController: controller,
+      ),
+    ),
+  );
+}
+```
+
+### Globe Tap → Country Card (Home Screen)
+
+On the home screen, the globe is interactive. When the user taps a country:
+
+1. Map controller queries `getCountryAtPoint(tapPosition)` → returns ISO code
+2. Country highlights briefly on the globe (accent color flash)
+3. Country Card bottom sheet slides up
+4. Camera subtly adjusts to center the tapped country
+
+This transforms the home screen from a static menu into a **living atlas** that invites exploration.
+
+### Flashcard Mode — The Card Game
+
+A dedicated learning mode where users study countries like flashcards. Accessible from:
+- The home screen (as a game card alongside the 6 competitive games)
+- The "Study Flashcards" button on any Country Card
+- The post-game resolution (when the user wants to review what they got wrong)
+
+#### Flashcard Mechanics
+
+**The deck**: Filtered by continent + difficulty tier (same pool system as games).
+
+**Card front**: Shows ONE piece of info. The user must guess the country (or vice versa).
+
+**Card types** (randomized):
+1. **Flag → Country**: Shows flag, tap to reveal country name
+2. **Silhouette → Country**: Shows country border on map, tap to reveal name
+3. **Capital → Country**: Shows "Berlin", tap to reveal "Germany"
+4. **Country → Capital**: Shows "Germany", tap to reveal "Berlin"
+5. **Country → Flag**: Shows "Germany", tap to reveal flag
+6. **Shape on Map → Country**: Camera zooms to a country, borders highlighted, tap to reveal
+
+**Interaction**:
+- **Tap card** or **swipe up**: Reveal the answer
+- After reveal: **Swipe right** = "I knew it" (card removed from deck), **Swipe left** = "Didn't know" (card goes back into rotation)
+- Session ends when all cards are swiped right, or the user exits
+
+**No timer, no score, no pressure.** This is the zen mode — purely for learning. The globe slowly rotates behind the flashcard as ambient decoration.
+
+#### Flashcard State
+
+```dart
+@freezed
+class FlashcardState with _$FlashcardState {
+  const factory FlashcardState({
+    required List<Flashcard> deck,           // Remaining cards
+    required List<Flashcard> knownCards,     // Swiped right
+    required List<Flashcard> reviewCards,    // Swiped left (re-enter deck)
+    required int currentIndex,
+    required bool isRevealed,
+    required Continent continent,
+    required Difficulty difficulty,          // Controls tier pool
+  }) = _FlashcardState;
+}
+
+@freezed
+class Flashcard with _$Flashcard {
+  const factory Flashcard({
+    required String countryCode,
+    required FlashcardType type,            // flag, silhouette, capital, etc.
+  }) = _Flashcard;
+}
+
+enum FlashcardType {
+  flagToCountry,
+  silhouetteToCountry,
+  capitalToCountry,
+  countryToCapital,
+  countryToFlag,
+  mapShapeToCountry,
+}
+```
+
+#### Flashcard UI Layout
+
+```
+┌──────────────────────────────────┐
+│  ← Back            12 / 45 left │  ← Progress
+│                                  │
+│         (globe rotates behind)   │
+│                                  │
+│  ┌──────────────────────────┐    │
+│  │                          │    │
+│  │         🇩🇪               │    │  ← Front: Flag (large)
+│  │                          │    │
+│  │    Tap to reveal         │    │
+│  │                          │    │
+│  └──────────────────────────┘    │
+│                                  │
+│  ── after tap / swipe up: ──     │
+│                                  │
+│  ┌──────────────────────────┐    │
+│  │                          │    │
+│  │    🇩🇪  Germany           │    │  ← Back: Answer revealed
+│  │    Capital: Berlin       │    │     with key facts
+│  │    Pop: 83.2M · Europe   │    │
+│  │                          │    │
+│  └──────────────────────────┘    │
+│                                  │
+│   ← Didn't know    I knew it →  │  ← Swipe left / right
+│      (review)        (done)      │
+└──────────────────────────────────┘
+```
+
+#### Flashcard on the Map
+
+For `mapShapeToCountry` type cards:
+1. Globe camera flies to the target country's region (offset so it's not perfectly centered — that would be too easy)
+2. Country border is highlighted (stroke only, no fill — same as the silhouette game)
+3. User taps "Reveal" → country fills with green, name label appears, camera centers
+4. Swipe right/left as usual
+
+This makes the flashcard mode feel like it's part of the globe experience, not a separate flat-UI quiz.
+
+### Wiki Data Used by Games
+
+The extended country data directly enables current and future game mechanics:
+
+| Data Field | Current Game Usage | Future Game Potential |
+|---|---|---|
+| `population` | — | Population Poker, Size comparisons |
+| `areaKm2` | — | Size Showdown, "larger or smaller?" |
+| `languages` | — | Language Match ("Which speak French?") |
+| `currency` / `currencyCode` | — | Currency Sprint ("Who uses the Baht?") |
+| `capital` | Capital Clash | Already in use |
+| `coordinates` | Map camera, labels | Already in use |
+| `neighbors` | Connect, Border Blitz, Country Card | Already in use (was separate adjacency graph, now part of Country model) |
+| `tier` | All games (pool filter) | Already in use |
+| `gdpBillions` | — | Economy Quiz |
+| `drivingSide` | — | Trivia bonus rounds |
+| `callingCode` | — | Trivia bonus rounds |
+
+### Personal Progress Tracking
+
+The Country Card's "Your Progress" section requires tracking per-country stats locally:
+
+```dart
+/// Persisted per-country stats
+class CountryProgress {
+  final String code;
+  int flagSprintCorrect = 0;
+  int flagSprintTotal = 0;
+  int mapQuizCorrect = 0;
+  int mapQuizTotal = 0;
+  int capitalCorrect = 0;
+  int capitalTotal = 0;
+  int silhouetteCorrect = 0;
+  int silhouetteTotal = 0;
+  bool borderBlitzNamed = false;    // Ever correctly named as a neighbor
+  int flashcardsKnown = 0;          // Times swiped "I knew it"
+  int flashcardsReviewed = 0;       // Times swiped "Didn't know"
+  DateTime? lastSeen;               // Last time this country appeared in any game
+}
+```
+
+Store using **Hive** (lightweight, fast, no SQL overhead) or `shared_preferences` serialized as JSON. Updated at the end of each game session.
+
+**Aggregate stats** (shown on a profile/stats screen):
+- "You've identified 140 / 213 flags correctly"
+- "You can locate 95 / 213 countries on the map"
+- "You know 180 / 213 capitals"
+- Continent completion percentages
+- Weakest countries (most wrong answers)
+
+---
+
+## 7. Game Engine Layer (Dart)
 
 ### Country Tier System (Difficulty-Based Pool Filtering)
 
@@ -521,7 +811,7 @@ class ConnectGameNotifier extends StateNotifier<ConnectGameState?> {
 
 ---
 
-## 7. Game Blueprints — How Each Game Lives on the Map
+## 8. Game Blueprints — How Each Game Lives on the Map
 
 ### Game 1: Connect Countries
 
@@ -636,7 +926,34 @@ class ConnectGameNotifier extends StateNotifier<ConnectGameState?> {
 
 ---
 
-## 8. Home Screen — The Living Globe
+### Game 7: Flashcards (Study Mode)
+
+**Map role**: Ambient + interactive for map-type cards.
+**Tier filtering**: Same as all games — Easy = Tier 1, Medium = 1+2, Hard = all.
+
+This is NOT a competitive game — it's a **relaxed learning mode** with no timer and no score. It completes the learn → play → verify → remember loop.
+
+| Mode | Front | Back | Map Behavior |
+|---|---|---|---|
+| Flag → Country | Flag image | Country name + key facts | Globe slowly rotates |
+| Silhouette → Country | Country border highlighted on map | Name + fill green + center camera | Camera zooms to region, border stroke only |
+| Capital → Country | Capital name | Country name + flag | Globe slowly rotates |
+| Country → Capital | Country name | Capital + pin on map | Camera flies to country, drops pin |
+| Country → Flag | Country name | Flag image | Globe slowly rotates |
+| Map Shape → Country | Camera zooms to country, border highlighted | Name + fill + label | Camera offset zoom, then centers on reveal |
+
+**Interaction**: Tap to reveal → Swipe right ("I knew it") or Swipe left ("Didn't know"). Cards swiped left re-enter the deck. Session ends when all cards are mastered.
+
+**Entry points**:
+- Home screen game card (🃏 Flashcards)
+- Country Card bottom sheet ("Study Flashcards" button)
+- Post-game resolution ("Review what you missed")
+
+**Accent color**: `#6366F1` (Indigo)
+
+---
+
+## 9. Home Screen — The Living Globe
 
 ### Layout
 
@@ -675,6 +992,10 @@ The home screen is an overlay on the rotating globe:
 │ │ │ 📍 Find on Map            ││ │
 │ │ │  90s · well-known         ││ │
 │ │ └───────────────────────────┘│ │
+│ │ ┌───────────────────────────┐│ │
+│ │ │ 🃏 Flashcards             ││ │
+│ │ │  Study · no timer · learn ││ │  ← Study mode
+│ │ └───────────────────────────┘│ │
 │ │         ... more games       │ │
 │ └──────────────────────────────┘ │
 │                                  │
@@ -687,6 +1008,7 @@ The home screen is an overlay on the rotating globe:
 - **Idle rotation**: Globe slowly rotates (~2° per second, bearing only)
 - **Touch**: User can freely spin/zoom the globe behind the overlay
 - **Continent selection**: Tapping a continent chip → camera smoothly flies to that continent. The globe shows the selected region prominently behind the semi-transparent game list.
+- **Country tap → Wiki Card**: When the user taps a country on the visible globe area (above the game list), the Country Card bottom sheet slides up with that country's wiki info. This transforms the home screen into an explorable atlas. Country labels are visible on the home globe (unlike during Find on Map gameplay).
 - **Game selection**: Tapping a game card → home overlay fades out (300ms) → camera flies to relevant position → countdown begins
 
 ### Difficulty-Aware Game Cards
@@ -724,7 +1046,7 @@ ClipRRect(
 
 ---
 
-## 9. Shared Widget Library
+## 10. Shared Widget Library
 
 ### TimerBar
 
@@ -809,7 +1131,7 @@ See [Section 12](#12-autocomplete-input--mobile-optimized) for full specificatio
 
 ---
 
-## 10. Theming — Dark & Light Mode
+## 11. Theming — Dark & Light Mode
 
 ### Dual Theme Support
 
@@ -869,6 +1191,7 @@ static final light = ThemeData(
 | Capital Clash | `#F59E0B` (Amber) |
 | Border Blitz | `#8B5CF6` (Violet) |
 | Find on Map | `#06B6D4` (Cyan) |
+| Flashcards | `#6366F1` (Indigo) |
 
 ### Theme Switching
 
@@ -893,7 +1216,7 @@ ref.listen(themeModeProvider, (prev, next) {
 
 ---
 
-## 11. Internationalization (i18n)
+## 12. Internationalization (i18n)
 
 ### Flutter's Built-in i18n with ARB Files
 
@@ -990,7 +1313,7 @@ String capitalName(String code, Locale locale) {
 
 ---
 
-## 12. Autocomplete Input — Mobile Optimized
+## 13. Autocomplete Input — Mobile Optimized
 
 ### Design for Thumbs
 
@@ -1061,7 +1384,7 @@ List<String> filterSuggestions(String input, List<String> allNames) {
 
 ---
 
-## 13. Animations & Haptics
+## 14. Animations & Haptics
 
 ### Animation Catalog
 
@@ -1075,6 +1398,10 @@ List<String> filterSuggestions(String input, List<String> allNames) {
 | Result card | Slide up from bottom + fade | 400ms | `.slideY(begin: 1).fadeIn()` |
 | Result sub-sections | Staggered fade in | 150ms each, 100ms delay | `.fadeIn().slideY()` with interval |
 | Game card tap | Scale to 0.96 then back | 100ms | `GestureDetector` + `AnimatedScale` |
+| Flashcard reveal | 3D Y-axis flip (front → back) | 400ms | `Transform` with `Matrix4.rotationY` |
+| Flashcard swipe right | Slide right + rotate + fade | 300ms | `flutter_animate` `.slideX().rotate().fadeOut()` |
+| Flashcard swipe left | Slide left + rotate + fade | 300ms | Same, opposite direction |
+| Country Card slide up | Bottom sheet spring | 400ms | `showModalBottomSheet` with spring curve |
 | Home → Game transition | Overlay fade out + camera fly | 300ms + 1200ms | Parallel: widget fade, camera animate |
 | Flag image swap | Cross-fade with slight scale | 200ms | `AnimatedSwitcher` |
 | Timer warning | Pulse scale + color shift | Continuous when ≤10s | `AnimationController` repeat |
@@ -1089,11 +1416,15 @@ List<String> filterSuggestions(String input, List<String> allNames) {
 | Streak milestone (×2, ×3...) | Success pattern | `HapticFeedback.mediumImpact()` × 2 |
 | Timer warning (≤5s) | Tick per second | `HapticFeedback.selectionClick()` |
 | Game complete | Success notification | `HapticFeedback.heavyImpact()` + delay + `lightImpact()` |
+| Flashcard reveal | Light impact | `HapticFeedback.lightImpact()` |
+| Flashcard swipe (known) | Selection click | `HapticFeedback.selectionClick()` |
+| Flashcard swipe (review) | Light impact | `HapticFeedback.lightImpact()` |
+| Country Card open | Light impact | `HapticFeedback.lightImpact()` |
 | Button tap | Selection click | `HapticFeedback.selectionClick()` |
 
 ---
 
-## 14. Offline Mode (Premium)
+## 15. Offline Mode (Premium)
 
 ### Architecture
 
@@ -1170,7 +1501,7 @@ class OfflineMapManager {
 
 ---
 
-## 15. Monetization & Premium Features
+## 16. Monetization & Premium Features
 
 ### Free Tier
 
@@ -1211,7 +1542,7 @@ Use `in_app_purchase` package for App Store / Google Play integration.
 
 ---
 
-## 16. Sound Design
+## 17. Sound Design
 
 ### Sound Effects (Optional but Impactful)
 
@@ -1244,7 +1575,7 @@ Bundle sounds as small WAV/OGG files (~50KB total). Use `just_audio` for low-lat
 
 ---
 
-## 17. Performance Budget
+## 18. Performance Budget
 
 ### Targets
 
@@ -1277,7 +1608,7 @@ Bundle sounds as small WAV/OGG files (~50KB total). Use `just_audio` for low-lat
 
 ---
 
-## 18. Project Structure
+## 19. Project Structure
 
 ```
 geoplay_mobile/
@@ -1311,12 +1642,14 @@ geoplay_mobile/
 │   │   │   ├── map_camera_presets.dart   # Continent camera positions
 │   │   │   └── map_highlight.dart        # Country highlighting logic
 │   │   ├── data/
-│   │   │   ├── countries.dart            # Country model + 213 entries
+│   │   │   ├── countries.dart            # Country model (extended with wiki fields)
+│   │   │   ├── country_data.dart         # All 213 entries with full wiki data
 │   │   │   ├── country_tiers.dart        # Tier 1/2/3 per country + helpers
-│   │   │   ├── adjacency.dart            # Border graph
+│   │   │   ├── adjacency.dart            # Border graph helpers (reads from Country.neighbors)
 │   │   │   ├── graph.dart                # BFS pathfinding
 │   │   │   ├── country_names.dart        # Localized country names (7 langs)
-│   │   │   └── capital_names.dart        # Localized capital names (7 langs)
+│   │   │   ├── capital_names.dart        # Localized capital names (7 langs)
+│   │   │   └── country_progress.dart     # Per-country personal stats persistence
 │   │   ├── audio/
 │   │   │   └── audio_manager.dart        # Sound effects
 │   │   └── premium/
@@ -1330,6 +1663,7 @@ geoplay_mobile/
 │   │   ├── capital_clash_engine.dart
 │   │   ├── border_blitz_engine.dart
 │   │   ├── map_quiz_engine.dart
+│   │   ├── flashcard_engine.dart         # Flashcard deck/swipe logic
 │   │   └── scoring.dart                  # Connect Countries scoring
 │   │
 │   ├── providers/                        # Riverpod providers
@@ -1353,7 +1687,11 @@ geoplay_mobile/
 │   │   │   ├── flag_sprint_overlay.dart
 │   │   │   ├── capital_clash_overlay.dart
 │   │   │   ├── border_blitz_overlay.dart
-│   │   │   └── map_quiz_overlay.dart
+│   │   │   ├── map_quiz_overlay.dart
+│   │   │   └── flashcard_overlay.dart    # Flashcard study mode
+│   │   ├── wiki/
+│   │   │   ├── country_card.dart         # Country Card bottom sheet
+│   │   │   └── country_progress_view.dart# Per-country stats display
 │   │   └── settings/
 │   │       ├── settings_screen.dart
 │   │       ├── language_picker.dart
@@ -1367,7 +1705,8 @@ geoplay_mobile/
 │   │   ├── frosted_card.dart
 │   │   ├── stat_grid.dart
 │   │   ├── answer_review_list.dart
-│   │   └── flag_image.dart
+│   │   ├── flag_image.dart
+│   │   └── swipe_card.dart              # Tinder-style swipe widget for flashcards
 │   │
 │   └── theme/
 │       ├── app_theme.dart                # Dark + Light ThemeData
@@ -1381,7 +1720,7 @@ geoplay_mobile/
 
 ---
 
-## 19. Dependencies (pubspec.yaml)
+## 20. Dependencies (pubspec.yaml)
 
 ```yaml
 name: geoplay
@@ -1413,6 +1752,7 @@ dependencies:
   
   # Storage
   shared_preferences: ^2.3.0
+  hive_flutter: ^1.1.0             # Fast local DB for country progress stats
   
   # Audio
   just_audio: ^0.9.40
@@ -1445,7 +1785,7 @@ flutter:
 
 ---
 
-## 20. Deployment & Distribution
+## 21. Deployment & Distribution
 
 ### Mapbox Token Management
 
@@ -1471,7 +1811,7 @@ flutter:
 
 ---
 
-## 21. Future-Proofing — Adding New Games
+## 22. Future-Proofing — Adding New Games
 
 ### The Game Plugin Pattern
 
@@ -1512,16 +1852,24 @@ That's 5 files to create and 2 files to modify. The map controller, shared widge
 
 ### Potential Future Games
 
-All of these fit naturally on the globe:
+#### Data-Driven Games (enabled by the Country Wiki data)
 
-- **Trade Routes** — Draw historical trade paths (Silk Road, Spice Route) by naming waypoint countries
-- **Time Zone Sprint** — A clock shows a time; tap the country where that time zone exists
-- **Population Poker** — Two countries shown; tap which has more population
+These games require NO new external data — they pull directly from the extended Country model:
+
+- **Population Poker** — Two countries highlighted on globe; tap which has more population. Uses `population` field. Fast rounds, streak-based scoring.
+- **Size Showdown** — Two country silhouettes shown side by side; tap the larger one. Uses `areaKm2` field. Camera flies between the two countries on the globe.
+- **Language Match** — "Which of these 4 countries speaks French?" Uses `languages` field. Multiple choice, map highlights all correct answers on reveal.
+- **Currency Sprint** — "Which country uses the Baht?" Uses `currency`/`currencyCode` field. Sprint format like Flag Sprint.
+- **Economy Quiz** — "Rank these 3 countries by GDP." Uses `gdpBillions` field. Drag-to-order mechanic.
+
+#### Map-Native Games (use globe interaction)
+
 - **Capital Pin Drop** — A pin appears at a capital city location; name the city
+- **Continent Speed Run** — Name all countries in a continent as fast as possible. Globe highlights each one as named.
+- **Trade Routes** — Draw historical trade paths (Silk Road, Spice Route) by naming waypoint countries
 - **River Run** — Name countries a river flows through (Danube, Nile, Amazon)
-- **Continent Speed Run** — Name all countries in a continent as fast as possible
 
-Each of these is: one engine file, one overlay file, one provider, a few i18n keys, and a card on the home screen. The globe handles the rest.
+Each of these is: one engine file, one overlay file, one provider, a few i18n keys, and a card on the home screen. The globe and the country data handle the rest.
 
 ---
 
@@ -1531,11 +1879,16 @@ This specification describes a **globe-first mobile app** where:
 
 - The **3D Mapbox globe is always visible** and acts as the canvas for all games
 - **Flutter** provides pixel-perfect cross-platform UI with GPU-composited overlays
-- **6 games** each have a unique relationship with the map (from primary interaction to ambient decoration)
+- **7 modes** (6 competitive games + Flashcard study mode), each with a unique relationship with the map
+- **Country Wiki** with extended data (population, area, language, currency, GDP) acts as the single source of truth — powering games, the Country Card, and future data-driven game modes
+- **Country Card** turns the home globe into an explorable atlas — tap any country to learn about it. Appears in post-game review to close the learn → play → verify → remember loop
+- **Flashcard study mode** provides pressure-free learning with Tinder-style swipe mechanics, 6 card types (flag, silhouette, capital, map shape), and globe integration
 - **Country tier system** makes difficulty meaningful — Easy shows well-known countries (~55), Medium adds regional ones (~120), Hard includes all 213 down to micro-states
+- **Personal progress tracking** per country — "You've identified 140/213 flags" — drives completionism and retention
 - **Dark and light themes** switch both the UI and the map style
 - **7 languages** with full support for country names, capital names, and UI strings (including RTL for Arabic)
 - **Offline premium** lets users download map tiles for airplane-mode play
-- **New games** can be added with 5 files and a game card — the architecture (including tier-based pool filtering) scales indefinitely
+- **Data-driven future games** (Population Poker, Size Showdown, Language Match, Currency Sprint) require zero new external data — they pull from the Country model
+- **New games** can be added with 5 files and a game card — the architecture scales indefinitely
 
-The result is an app that feels like a polished, cinematic geography experience — not a quiz app with a map bolted on, but a living globe that happens to host games.
+The result is an app that feels like a polished, cinematic geography experience — not a quiz app with a map bolted on, but a **living globe that teaches you the world while you play**.
