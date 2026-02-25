@@ -1,0 +1,73 @@
+{
+  "@@locale": "en",
+  "appTitle": "GeoPlay",
+  "homeSubtitle": "Master the globe.",
+  "difficultyEasy": "Easy",
+  "difficultyMedium": "Medium",
+  "difficultyHard": "Hard",
+  "continentAll": "All",
+  "continentEurope": "Europe",
+  "continentAsia": "Asia",
+  "continentAfrica": "Africa",
+  "continentNorthAmerica": "N. America",
+  "continentSouthAmerica": "S. America",
+  "continentOceania": "Oceania",
+  "poolLabelEasy": "well-known",
+  "poolLabelMedium": "most",
+  "poolLabelHard": "all",
+  "commonPlayAgain": "Play Again",
+  "commonHome": "Home",
+  "commonGo": "GO",
+  "commonSkip": "Skip",
+  "commonScore": "Score",
+  "commonTime": "Time",
+  "commonCorrect": "Correct",
+  "commonWrong": "Wrong",
+  "commonRound": "Round",
+  "commonStreak": "Streak",
+  "commonBestStreak": "Best Streak",
+  "commonGetReady": "Get ready!",
+  "commonTimeUp": "TIME UP",
+  "commonPerfect": "PERFECT!",
+  "commonGreat": "GREAT!",
+  "commonGood": "Good!",
+  "commonNiceTry": "Nice try!",
+  "gameConnectTitle": "Connect Countries",
+  "gameConnectDesc": "Find a path between two countries",
+  "gameSilhouetteTitle": "Find the Country",
+  "gameSilhouetteDesc": "Identify countries by their shape",
+  "gameFlagSprintTitle": "Flag Sprint",
+  "gameFlagSprintDesc": "Identify as many flags as possible",
+  "gameCapitalClashTitle": "Capital Clash",
+  "gameCapitalClashDesc": "Match capitals to countries",
+  "gameBorderBlitzTitle": "Border Blitz",
+  "gameBorderBlitzDesc": "Name all neighboring countries",
+  "gameMapQuizTitle": "Find on Map",
+  "gameMapQuizDesc": "Tap the correct country on the globe",
+  "gameFlashcardsTitle": "Flashcards",
+  "gameFlashcardsDesc": "Study countries at your own pace",
+  "flagSprintWhichCountry": "Which country's flag is this?",
+  "capitalClashCapitalOf": "What is the capital of {country}?",
+  "@capitalClashCapitalOf": {
+    "placeholders": {
+      "country": {
+        "type": "String"
+      }
+    }
+  },
+  "capitalClashCountryWith": "Which country has the capital {capital}?",
+  "@capitalClashCountryWith": {
+    "placeholders": {
+      "capital": {
+        "type": "String"
+      }
+    }
+  },
+  "typeCountryName": "Type country name...",
+  "typeCapitalName": "Type capital name...",
+  "swipeUpForGames": "Swipe up for games",
+  "settingsTitle": "Settings",
+  "settingsTheme": "Theme",
+  "settingsLanguage": "Language",
+  "settingsSound": "Sound"
+}
