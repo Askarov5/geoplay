@@ -14,6 +14,7 @@ import {
   BORDER_BLITZ_CONFIGS,
   MAP_QUIZ_CONFIGS,
 } from "@/lib/game-engine/types";
+import { Link2, Map, Flag, Zap, Swords, MapPin } from "lucide-react";
 import { useTranslation } from "@/lib/i18n/context";
 import { LOCALES } from "@/lib/i18n/types";
 import type { Locale, Translations } from "@/lib/i18n/types";
@@ -70,61 +71,61 @@ export default function HomePage() {
       id: "connect",
       title: t("home.connectTitle"),
       description: t("home.connectDesc"),
-      icon: "🔗",
+      icon: <Link2 strokeWidth={2.5} className="w-6 h-6" />,
       accentColor: "#3b82f6",
       available: true,
       path: "/games/connect",
       difficultyInfo: `${connectCfg.minPathLength}-${connectCfg.maxPathLength} ${t("flags.diffCountries")} · ${connectCfg.executionTime}s`,
     },
     {
-      id: "silhouette",
-      title: t("home.silhouetteTitle"),
-      description: t("home.silhouetteDesc"),
-      icon: "🗺️",
-      accentColor: "#a855f7",
+      id: "mapQuiz",
+      title: t("home.mapQuizTitle"),
+      description: t("home.mapQuizDesc"),
+      icon: <MapPin strokeWidth={2.5} className="w-6 h-6 text-[#06b6d4] fill-[#06b6d4]/20" />,
+      accentColor: "#06b6d4",
       available: true,
-      path: "/games/silhouette",
-      difficultyInfo: `${silhouetteCfg.totalRounds} ${t("flags.diffRounds")} · ${silhouetteCfg.roundTime}s ${t("flags.diffEach")} · ${poolLabel}`,
-    },
-    {
-      id: "flags",
-      title: t("home.flagsTitle"),
-      description: t("home.flagsDesc"),
-      icon: "🏁",
-      accentColor: "#22c55e",
-      available: true,
-      path: "/games/flags",
-      difficultyInfo: `${flagsCfg.totalTime}s · ${poolLabel}${flagsCfg.wrongPenalty > 0 ? ` · ${t("flags.diffWrong")} -${flagsCfg.wrongPenalty} pts` : ""}`,
-    },
-    {
-      id: "capitals",
-      title: t("home.capitalsTitle"),
-      description: t("home.capitalsDesc"),
-      icon: "⚡",
-      accentColor: "#f59e0b",
-      available: true,
-      path: "/games/capitals",
-      difficultyInfo: `${capitalsCfg.totalTime}s · ${poolLabel} · ${capitalsCfg.mixDirections ? t("capitals.diffMixed") : t("capitals.diffOneWay")}${capitalsCfg.wrongPenalty > 0 ? ` · ${t("flags.diffWrong")} -${capitalsCfg.wrongPenalty}` : ""}`,
+      path: "/games/map-quiz",
+      difficultyInfo: `${mapQuizCfg.totalTime}s · ${poolLabel}${mapQuizCfg.wrongPenalty > 0 ? ` · ${t("flags.diffWrong")} -${mapQuizCfg.wrongPenalty}` : ""}`,
     },
     {
       id: "borderBlitz",
       title: t("home.borderBlitzTitle"),
       description: t("home.borderBlitzDesc"),
-      icon: "⚔️",
+      icon: <Swords strokeWidth={2.5} className="w-6 h-6" />,
       accentColor: "#8b5cf6",
       available: true,
       path: "/games/border-blitz",
       difficultyInfo: `${borderBlitzCfg.minNeighbors}–${borderBlitzCfg.maxNeighbors >= 99 ? "14" : borderBlitzCfg.maxNeighbors} ${t("borderBlitz.neighborsLabel")} · ${borderBlitzCfg.totalTime}s${borderBlitzCfg.wrongPenalty > 0 ? ` · ${t("flags.diffWrong")} -${borderBlitzCfg.wrongPenalty}` : ""}`,
     },
     {
-      id: "mapQuiz",
-      title: t("home.mapQuizTitle"),
-      description: t("home.mapQuizDesc"),
-      icon: "📍",
-      accentColor: "#06b6d4",
+      id: "capitals",
+      title: t("home.capitalsTitle"),
+      description: t("home.capitalsDesc"),
+      icon: <Zap strokeWidth={2.5} className="w-6 h-6 text-[#f59e0b] fill-[#f59e0b]/20" />,
+      accentColor: "#f59e0b",
       available: true,
-      path: "/games/map-quiz",
-      difficultyInfo: `${mapQuizCfg.totalTime}s · ${poolLabel}${mapQuizCfg.wrongPenalty > 0 ? ` · ${t("flags.diffWrong")} -${mapQuizCfg.wrongPenalty}` : ""}`,
+      path: "/games/capitals",
+      difficultyInfo: `${capitalsCfg.totalTime}s · ${poolLabel} · ${capitalsCfg.mixDirections ? t("capitals.diffMixed") : t("capitals.diffOneWay")}${capitalsCfg.wrongPenalty > 0 ? ` · ${t("flags.diffWrong")} -${capitalsCfg.wrongPenalty}` : ""}`,
+    },
+    {
+      id: "flags",
+      title: t("home.flagsTitle"),
+      description: t("home.flagsDesc"),
+      icon: <Flag strokeWidth={2.5} className="w-6 h-6" />,
+      accentColor: "#22c55e",
+      available: true,
+      path: "/games/flags",
+      difficultyInfo: `${flagsCfg.totalTime}s · ${poolLabel}${flagsCfg.wrongPenalty > 0 ? ` · ${t("flags.diffWrong")} -${flagsCfg.wrongPenalty} pts` : ""}`,
+    },
+    {
+      id: "silhouette",
+      title: t("home.silhouetteTitle"),
+      description: t("home.silhouetteDesc"),
+      icon: <Map strokeWidth={2.5} className="w-6 h-6" />,
+      accentColor: "#a855f7",
+      available: true,
+      path: "/games/silhouette",
+      difficultyInfo: `${silhouetteCfg.totalRounds} ${t("flags.diffRounds")} · ${silhouetteCfg.roundTime}s ${t("flags.diffEach")} · ${poolLabel}`,
     },
   ];
 
@@ -137,11 +138,10 @@ export default function HomePage() {
             <button
               key={loc.code}
               onClick={() => setLocale(loc.code)}
-              className={`px-2.5 py-1 rounded text-xs font-semibold transition-all ${
-                locale === loc.code
-                  ? "bg-[#3b82f6] text-white"
-                  : "text-[#94a3b8] hover:text-[#f1f5f9]"
-              }`}
+              className={`px-2.5 py-1 rounded text-xs font-semibold transition-all ${locale === loc.code
+                ? "bg-[#3b82f6] text-white"
+                : "text-[#94a3b8] hover:text-[#f1f5f9]"
+                }`}
               title={loc.nativeName}
             >
               {loc.label}
@@ -181,11 +181,10 @@ export default function HomePage() {
               <button
                 key={diff}
                 onClick={() => setSelectedDifficulty(diff)}
-                className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                  isSelected
-                    ? "bg-[#3b82f6] text-white shadow-lg shadow-[#3b82f6]/20"
-                    : "text-[#94a3b8] hover:text-[#f1f5f9]"
-                }`}
+                className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${isSelected
+                  ? "bg-[#3b82f6] text-white shadow-lg shadow-[#3b82f6]/20"
+                  : "text-[#94a3b8] hover:text-[#f1f5f9]"
+                  }`}
               >
                 {t(difficultyKeys[diff].label)}
               </button>
@@ -208,11 +207,10 @@ export default function HomePage() {
               <button
                 key={cont.id}
                 onClick={() => setSelectedContinent(cont.id)}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all border ${
-                  isSelected
-                    ? "bg-[#1e293b] border-[#3b82f6] text-[#f1f5f9] shadow-lg shadow-[#3b82f6]/10"
-                    : "bg-[#111827] border-[#1e293b] text-[#94a3b8] hover:text-[#f1f5f9] hover:border-[#334155]"
-                }`}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all border ${isSelected
+                  ? "bg-[#1e293b] border-[#3b82f6] text-[#f1f5f9] shadow-lg shadow-[#3b82f6]/10"
+                  : "bg-[#111827] border-[#1e293b] text-[#94a3b8] hover:text-[#f1f5f9] hover:border-[#334155]"
+                  }`}
               >
                 <span className="mr-1.5">{cont.emoji}</span>
                 {t(continentKeys[cont.id] || "continent.all")}

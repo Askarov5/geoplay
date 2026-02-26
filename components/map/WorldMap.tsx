@@ -138,12 +138,27 @@ const WorldMapInner = ({
 
   // ── Zoom / Pan state ──
   const svgRef = useRef<SVGSVGElement>(null);
-  const [zoomVB, setZoomVB] = useState<ViewBox | null>(null);
+  const zoomVBRef = useRef<ViewBox | null>(null);
   const didDragRef = useRef(false);
   const panStartRef = useRef<{
     mx: number; my: number;
     vbX: number; vbY: number; vbW: number; vbH: number;
   } | null>(null);
+
+  const applyZoom = useCallback((vb: ViewBox | null) => {
+    zoomVBRef.current = vb;
+    const svg = svgRef.current;
+    if (svg) {
+      const activeVB = vb || { x: 0, y: 0, w: 960, h: 600 };
+      svg.setAttribute("viewBox", `${activeVB.x} ${activeVB.y} ${activeVB.w} ${activeVB.h}`);
+      const ratio = activeVB.w / 960;
+      const newR = Math.max(1.5, 4 * ratio);
+      const dots = svg.querySelectorAll('.micro-dot');
+      for (let i = 0; i < dots.length; i++) {
+        dots[i].setAttribute("r", String(newR));
+      }
+    }
+  }, []);
 
   useEffect(() => {
     fetch(TOPO_URL)
@@ -246,11 +261,11 @@ const WorldMapInner = ({
   // Apply initial continent zoom
   useEffect(() => {
     if (!enableZoom) return;
-    setZoomVB(continentVB);
-  }, [enableZoom, continentVB]);
+    applyZoom(continentVB);
+  }, [enableZoom, continentVB, applyZoom]);
 
   // ── Effective viewBox ──
-  const effectiveVB = enableZoom && zoomVB ? zoomVB : baseVB;
+  const effectiveVB = enableZoom && zoomVBRef.current ? zoomVBRef.current : baseVBRef.current;
   const effectiveViewBox = `${effectiveVB.x} ${effectiveVB.y} ${effectiveVB.w} ${effectiveVB.h}`;
 
   // ── Scroll-wheel zoom (non-passive listener for preventDefault) ──
@@ -268,20 +283,19 @@ const WorldMapInner = ({
       const fy = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
       const factor = e.deltaY > 0 ? 1.12 : 1 / 1.12;
 
-      setZoomVB((prev) => {
-        const vb = prev || baseVBRef.current;
-        const newW = Math.max(MIN_ZOOM_W, Math.min(MAX_ZOOM_W, vb.w * factor));
-        const ratio = vb.h / vb.w;
-        const newH = newW * ratio;
-        const px = vb.x + fx * vb.w;
-        const py = vb.y + fy * vb.h;
-        return { x: px - fx * newW, y: py - fy * newH, w: newW, h: newH };
-      });
+      const vb = zoomVBRef.current || baseVBRef.current;
+      const newW = Math.max(MIN_ZOOM_W, Math.min(MAX_ZOOM_W, vb.w * factor));
+      const ratio = vb.h / vb.w;
+      const newH = newW * ratio;
+      const px = vb.x + fx * vb.w;
+      const py = vb.y + fy * vb.h;
+
+      applyZoom({ x: px - fx * newW, y: py - fy * newH, w: newW, h: newH });
     };
 
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
-  }, [enableZoom]);
+  }, [enableZoom, applyZoom]);
 
   // ── Drag-to-pan (pointer events on window for smooth dragging) ──
   useEffect(() => {
@@ -307,7 +321,7 @@ const WorldMapInner = ({
       const svgDx = (dx / rect.width) * pan.vbW;
       const svgDy = (dy / rect.height) * pan.vbH;
 
-      setZoomVB({
+      applyZoom({
         x: pan.vbX - svgDx,
         y: pan.vbY - svgDy,
         w: pan.vbW,
@@ -325,13 +339,13 @@ const WorldMapInner = ({
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
     };
-  }, [enableZoom]);
+  }, [enableZoom, applyZoom]);
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent<SVGSVGElement>) => {
       if (!enableZoom) return;
       didDragRef.current = false;
-      const vb = zoomVB || baseVB;
+      const vb = zoomVBRef.current || baseVBRef.current;
       panStartRef.current = {
         mx: e.clientX,
         my: e.clientY,
@@ -341,39 +355,35 @@ const WorldMapInner = ({
         vbH: vb.h,
       };
     },
-    [enableZoom, zoomVB, baseVB]
+    [enableZoom]
   );
 
   // ── Zoom button handlers ──
   const handleZoomIn = useCallback(() => {
-    setZoomVB((prev) => {
-      const vb = prev || baseVBRef.current;
-      const factor = 0.7;
-      const newW = Math.max(MIN_ZOOM_W, vb.w * factor);
-      const ratio = vb.h / vb.w;
-      const newH = newW * ratio;
-      const cx = vb.x + vb.w / 2;
-      const cy = vb.y + vb.h / 2;
-      return { x: cx - newW / 2, y: cy - newH / 2, w: newW, h: newH };
-    });
-  }, []);
+    const vb = zoomVBRef.current || baseVBRef.current;
+    const factor = 0.7;
+    const newW = Math.max(MIN_ZOOM_W, vb.w * factor);
+    const ratio = vb.h / vb.w;
+    const newH = newW * ratio;
+    const cx = vb.x + vb.w / 2;
+    const cy = vb.y + vb.h / 2;
+    applyZoom({ x: cx - newW / 2, y: cy - newH / 2, w: newW, h: newH });
+  }, [applyZoom]);
 
   const handleZoomOut = useCallback(() => {
-    setZoomVB((prev) => {
-      const vb = prev || baseVBRef.current;
-      const factor = 1 / 0.7;
-      const newW = Math.min(MAX_ZOOM_W, vb.w * factor);
-      const ratio = vb.h / vb.w;
-      const newH = newW * ratio;
-      const cx = vb.x + vb.w / 2;
-      const cy = vb.y + vb.h / 2;
-      return { x: cx - newW / 2, y: cy - newH / 2, w: newW, h: newH };
-    });
-  }, []);
+    const vb = zoomVBRef.current || baseVBRef.current;
+    const factor = 1 / 0.7;
+    const newW = Math.min(MAX_ZOOM_W, vb.w * factor);
+    const ratio = vb.h / vb.w;
+    const newH = newW * ratio;
+    const cx = vb.x + vb.w / 2;
+    const cy = vb.y + vb.h / 2;
+    applyZoom({ x: cx - newW / 2, y: cy - newH / 2, w: newW, h: newH });
+  }, [applyZoom]);
 
   const handleZoomReset = useCallback(() => {
-    setZoomVB(continentVB);
-  }, [continentVB]);
+    applyZoom(continentVB);
+  }, [applyZoom, continentVB]);
 
   // Build highlight lookup
   const highlightMap = useMemo(() => {
@@ -435,34 +445,18 @@ const WorldMapInner = ({
   );
 
   // Stroke width adapts to zoom level
-  const strokeWidth = useMemo(() => {
-    if (isZoomed) return "0.3";
-    if (enableZoom && zoomVB) {
-      // Thinner strokes when zoomed in
-      const ratio = zoomVB.w / DEFAULT_VB.w;
-      return String(Math.max(0.1, 0.5 * ratio));
-    }
-    return "0.5";
-  }, [isZoomed, enableZoom, zoomVB]);
-
-  const gratStrokeWidth = useMemo(() => {
-    if (isZoomed) return "0.15";
-    if (enableZoom && zoomVB) {
-      const ratio = zoomVB.w / DEFAULT_VB.w;
-      return String(Math.max(0.05, 0.3 * ratio));
-    }
-    return "0.3";
-  }, [isZoomed, enableZoom, zoomVB]);
+  const strokeWidth = isZoomed ? "0.3" : "0.5";
+  const gratStrokeWidth = isZoomed ? "0.15" : "0.3";
 
   // Micro-state dot radius adapts to zoom level
-  const microDotRadius = useMemo(() => {
+  const getMicroDotRadius = useCallback(() => {
     if (isZoomed) return 2.5;
-    if (enableZoom && zoomVB) {
-      const ratio = zoomVB.w / DEFAULT_VB.w;
+    if (enableZoom && zoomVBRef.current) {
+      const ratio = zoomVBRef.current.w / DEFAULT_VB.w;
       return Math.max(1.5, 4 * ratio);
     }
     return 4;
-  }, [isZoomed, enableZoom, zoomVB]);
+  }, [isZoomed, enableZoom]);
 
   // Track which country codes have visible TopoJSON geometry
   const renderedCodes = useMemo(() => {
@@ -522,6 +516,7 @@ const WorldMapInner = ({
           fill="none"
           stroke="#1a1f2e"
           strokeWidth={gratStrokeWidth}
+          vectorEffect="non-scaling-stroke"
         />
 
         {/* Country shapes */}
@@ -538,6 +533,7 @@ const WorldMapInner = ({
               fill={getCountryColor(alpha2)}
               stroke="#0f172a"
               strokeWidth={strokeWidth}
+              vectorEffect="non-scaling-stroke"
               className={`map-country transition-colors duration-300${isClickable ? " cursor-pointer" : ""}`}
               onMouseEnter={enableHover ? () => alpha2 && setHoveredCountry(alpha2) : undefined}
               onMouseLeave={enableHover ? () => setHoveredCountry(null) : undefined}
@@ -562,11 +558,12 @@ const WorldMapInner = ({
               key={`micro-${c.code}`}
               cx={pt[0]}
               cy={pt[1]}
-              r={microDotRadius}
+              r={getMicroDotRadius()}
               fill={getCountryColor(c.code)}
               stroke="#0f172a"
               strokeWidth="0.3"
-              className={`map-country transition-colors duration-300${isClickable ? " cursor-pointer" : ""}`}
+              vectorEffect="non-scaling-stroke"
+              className={`micro-dot map-country transition-colors duration-300${isClickable ? " cursor-pointer" : ""}`}
               onMouseEnter={enableHover ? () => setHoveredCountry(c.code) : undefined}
               onMouseLeave={enableHover ? () => setHoveredCountry(null) : undefined}
               onClick={
