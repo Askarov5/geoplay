@@ -7,7 +7,6 @@ import type {
   SilhouetteGameState,
   SilhouetteRound,
   SilhouetteHint,
-  SILHOUETTE_CONFIGS as _SC,
 } from "./types";
 import { SILHOUETTE_CONFIGS } from "./types";
 

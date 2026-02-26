@@ -22,7 +22,7 @@ interface MapQuizGameProps {
 }
 
 export function MapQuizGame({ difficulty, continent, onGoHome }: MapQuizGameProps) {
-  const { t, countryName, locale } = useTranslation();
+  const { t, countryName } = useTranslation();
   const [gameState, setGameState] = useState<MapQuizGameState | null>(null);
   const [feedbackState, setFeedbackState] = useState<"correct" | "wrong" | null>(null);
   const [flashCode, setFlashCode] = useState<string | null>(null);
@@ -233,11 +233,10 @@ export function MapQuizGame({ difficulty, continent, onGoHome }: MapQuizGameProp
               {gameState.attempts.map((attempt, i) => (
                 <div
                   key={i}
-                  className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm ${
-                    attempt.correct
+                  className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm ${attempt.correct
                       ? "bg-[#22c55e]/10 text-[#22c55e]"
                       : "bg-[#ef4444]/10 text-[#ef4444]"
-                  }`}
+                    }`}
                 >
                   <span className="font-medium">
                     {countryName(attempt.targetCode)}
@@ -339,9 +338,8 @@ export function MapQuizGame({ difficulty, continent, onGoHome }: MapQuizGameProp
             </span>
           )}
           <div
-            className={`text-xl font-bold tabular-nums ${
-              gameState.timeLeft <= 10 ? "text-[#ef4444] animate-pulse" : "text-[#f1f5f9]"
-            }`}
+            className={`text-xl font-bold tabular-nums ${gameState.timeLeft <= 10 ? "text-[#ef4444] animate-pulse" : "text-[#f1f5f9]"
+              }`}
           >
             {gameState.timeLeft}s
           </div>

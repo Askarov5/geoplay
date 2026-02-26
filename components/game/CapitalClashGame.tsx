@@ -125,7 +125,7 @@ export function CapitalClashGame({ difficulty, continent, onGoHome }: CapitalCla
       setSuggestions(filtered);
       setSelectedIndex(-1);
     },
-    [locale, isCapitalQuestion]
+    [isCapitalQuestion]
   );
 
   const handleSubmit = useCallback(
@@ -156,7 +156,7 @@ export function CapitalClashGame({ difficulty, continent, onGoHome }: CapitalCla
 
       if (inputRef.current) inputRef.current.focus();
     },
-    [gameState, inputValue, locale, countryName]
+    [gameState, inputValue, locale, countryName, capitalName]
   );
 
   const handleSkip = useCallback(() => {
@@ -174,7 +174,7 @@ export function CapitalClashGame({ difficulty, continent, onGoHome }: CapitalCla
       setLastAnswer(null);
     }, 800);
     if (inputRef.current) inputRef.current.focus();
-  }, [gameState, countryName]);
+  }, [gameState, countryName, capitalName]);
 
   const handlePlayAgain = useCallback(() => {
     setFeedbackState(null);
@@ -321,11 +321,10 @@ export function CapitalClashGame({ difficulty, continent, onGoHome }: CapitalCla
                   return (
                     <div
                       key={i}
-                      className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-medium ${
-                        attempt.correct
+                      className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-medium ${attempt.correct
                           ? "bg-[#22c55e]/10 text-[#22c55e]"
                           : "bg-[#ef4444]/10 text-[#ef4444]"
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
                         <span className="opacity-50 shrink-0">
@@ -434,9 +433,8 @@ export function CapitalClashGame({ difficulty, continent, onGoHome }: CapitalCla
 
           {/* Timer */}
           <div
-            className={`text-2xl font-bold tabular-nums ${
-              gameState.timeLeft <= 10 ? "text-[#ef4444] animate-pulse" : "text-[#f1f5f9]"
-            }`}
+            className={`text-2xl font-bold tabular-nums ${gameState.timeLeft <= 10 ? "text-[#ef4444] animate-pulse" : "text-[#f1f5f9]"
+              }`}
           >
             {gameState.timeLeft}s
           </div>
@@ -449,11 +447,10 @@ export function CapitalClashGame({ difficulty, continent, onGoHome }: CapitalCla
         <AnimatePresence>
           {lastAnswer && (
             <motion.div
-              className={`text-sm font-semibold px-3 py-1 rounded-lg ${
-                lastAnswer.correct
+              className={`text-sm font-semibold px-3 py-1 rounded-lg ${lastAnswer.correct
                   ? "bg-[#22c55e]/15 text-[#22c55e]"
                   : "bg-[#ef4444]/15 text-[#ef4444]"
-              }`}
+                }`}
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
@@ -474,13 +471,12 @@ export function CapitalClashGame({ difficulty, continent, onGoHome }: CapitalCla
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
           >
             <div
-              className={`rounded-2xl border-4 p-4 sm:p-8 text-center transition-colors duration-200 ${
-                feedbackState === "correct"
+              className={`rounded-2xl border-4 p-4 sm:p-8 text-center transition-colors duration-200 ${feedbackState === "correct"
                   ? "border-[#22c55e] bg-[#22c55e]/5"
                   : feedbackState === "wrong"
                     ? "border-[#ef4444] bg-[#ef4444]/5"
                     : "border-[#1e293b] bg-[#111827]"
-              }`}
+                }`}
             >
               {/* Question type indicator */}
               <div className="text-xs uppercase tracking-[0.2em] text-[#94a3b8] font-semibold mb-2 sm:mb-3">
@@ -548,11 +544,10 @@ export function CapitalClashGame({ difficulty, continent, onGoHome }: CapitalCla
                   {suggestions.map((name, i) => (
                     <button
                       key={name}
-                      className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                        i === selectedIndex
+                      className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${i === selectedIndex
                           ? "bg-[#1e293b] text-white"
                           : "text-[#cbd5e1] hover:bg-[#1e293b]"
-                      }`}
+                        }`}
                       onMouseDown={(e) => {
                         e.preventDefault();
                         handleSubmit(name);

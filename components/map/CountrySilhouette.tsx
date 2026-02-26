@@ -116,10 +116,6 @@ export function CountrySilhouette({
     const center = geoCentroid(countryFeature as GeoPermissibleObjects);
     const bounds = geoBounds(countryFeature as GeoPermissibleObjects);
 
-    // Calculate the geographic extent
-    const lonSpan = bounds[1][0] - bounds[0][0];
-    const latSpan = bounds[1][1] - bounds[0][1];
-
     // Use a Mercator projection centered on the country
     const proj = geoMercator()
       .center(center)

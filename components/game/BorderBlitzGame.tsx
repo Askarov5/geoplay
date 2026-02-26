@@ -6,7 +6,7 @@ import {
   createBorderBlitzGame,
   startPlaying,
   submitGuess,
-  useHint,
+  useHint as applyHint,
   skipAnchor,
   handleTimeout,
   getBorderBlitzStats,
@@ -112,7 +112,7 @@ export function BorderBlitzGame({ difficulty, continent, onGoHome }: BorderBlitz
       setSuggestions(filtered);
       setSelectedIndex(-1);
     },
-    [locale]
+    []
   );
 
   const handleSubmit = useCallback(
@@ -134,7 +134,7 @@ export function BorderBlitzGame({ difficulty, continent, onGoHome }: BorderBlitz
 
   const handleUseHint = useCallback(() => {
     if (!gameState || gameState.phase !== "playing") return;
-    const result = useHint(gameState);
+    const result = applyHint(gameState);
     setGameState(result.state);
     if (result.hintCode) {
       setHintFlash(result.hintCode);
@@ -178,12 +178,12 @@ export function BorderBlitzGame({ difficulty, continent, onGoHome }: BorderBlitz
   // ── Build map data from game state ──
   const allNeighbors = useMemo(
     () => (gameState ? getNeighborsForAnchor(gameState.anchorCode) : []),
-    [gameState?.anchorCode]
+    [gameState]
   );
 
   const focusRegion = useMemo(
     () => (gameState ? [gameState.anchorCode, ...allNeighbors] : []),
-    [gameState?.anchorCode, allNeighbors]
+    [gameState, allNeighbors]
   );
 
   const isResolution = gameState?.phase === "resolution";
@@ -448,9 +448,8 @@ export function BorderBlitzGame({ difficulty, continent, onGoHome }: BorderBlitz
             {foundCount} / {totalNeighbors}
           </div>
           <div
-            className={`text-xl font-bold tabular-nums ${
-              gameState.timeLeft <= 10 ? "text-[#ef4444] animate-pulse" : "text-[#f1f5f9]"
-            }`}
+            className={`text-xl font-bold tabular-nums ${gameState.timeLeft <= 10 ? "text-[#ef4444] animate-pulse" : "text-[#f1f5f9]"
+              }`}
           >
             {gameState.timeLeft}s
           </div>
@@ -536,11 +535,10 @@ export function BorderBlitzGame({ difficulty, continent, onGoHome }: BorderBlitz
                     {suggestions.map((name, i) => (
                       <button
                         key={name}
-                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                          i === selectedIndex
+                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${i === selectedIndex
                             ? "bg-[#1e293b] text-white"
                             : "text-[#cbd5e1] hover:bg-[#1e293b]"
-                        }`}
+                          }`}
                         onMouseDown={(e) => {
                           e.preventDefault();
                           handleSubmit(name);
@@ -579,11 +577,10 @@ export function BorderBlitzGame({ difficulty, continent, onGoHome }: BorderBlitz
               <button
                 onClick={handleSkip}
                 disabled={!skipEnabled}
-                className={`shrink-0 px-3 py-3 rounded-xl text-sm font-semibold transition-all border ${
-                  skipEnabled
+                className={`shrink-0 px-3 py-3 rounded-xl text-sm font-semibold transition-all border ${skipEnabled
                     ? "bg-[#a855f7]/20 hover:bg-[#a855f7]/30 text-[#a855f7] border-[#a855f7]/30"
                     : "bg-[#1e293b]/50 text-[#475569] border-[#1e293b] cursor-not-allowed"
-                }`}
+                  }`}
                 title={
                   skipEnabled
                     ? t("borderBlitz.skipTooltip")

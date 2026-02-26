@@ -17,7 +17,7 @@ import {
 import { Link2, Map, Flag, Zap, Swords, MapPin } from "lucide-react";
 import { useTranslation } from "@/lib/i18n/context";
 import { LOCALES } from "@/lib/i18n/types";
-import type { Locale, Translations } from "@/lib/i18n/types";
+import type { Translations } from "@/lib/i18n/types";
 
 const difficulties: Difficulty[] = ["easy", "medium", "hard"];
 

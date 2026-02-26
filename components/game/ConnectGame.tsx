@@ -10,7 +10,7 @@ import {
   createGame,
   startExecution,
   submitMove,
-  useHint,
+  useHint as applyHint,
   handleTimeout,
   handleMoveTimeout,
 } from "@/lib/game-engine/connect";
@@ -93,7 +93,7 @@ export function ConnectGame({ difficulty, continent, onGoHome }: ConnectGameProp
   // Handle hint
   const handleUseHint = useCallback(() => {
     if (!gameState) return;
-    const result = useHint(gameState);
+    const result = applyHint(gameState);
     setGameState(result.state);
     setHintCountry(result.hintCountry);
   }, [gameState]);

@@ -1,4 +1,4 @@
-import { countries, countryByCode, resolveCountryCode } from "@/data/countries";
+import { countries, resolveCountryCode } from "@/data/countries";
 import { getCountryTier, getMaxTierForDifficulty } from "@/data/country-tiers";
 import type {
   Continent,
@@ -282,8 +282,8 @@ export function getCapitalClashStats(state: CapitalClashGameState) {
   const avgTime =
     total > 0
       ? Math.round(
-          state.attempts.reduce((sum, a) => sum + a.timeMs, 0) / total
-        )
+        state.attempts.reduce((sum, a) => sum + a.timeMs, 0) / total
+      )
       : 0;
 
   return {

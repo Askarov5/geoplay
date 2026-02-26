@@ -12,7 +12,7 @@ import {
   getFlagUrl,
   getFlagSprintStats,
 } from "@/lib/game-engine/flags";
-import { getAllCountryNames, resolveCountryCode } from "@/data/countries";
+import { getAllCountryNames } from "@/data/countries";
 import type { FlagSprintGameState, Continent, Difficulty } from "@/lib/game-engine/types";
 import { useTranslation } from "@/lib/i18n/context";
 
@@ -113,7 +113,7 @@ export function FlagSprintGame({ difficulty, continent, onGoHome }: FlagSprintGa
       setSuggestions(filtered);
       setSelectedIndex(-1);
     },
-    [locale]
+    []
   );
 
   const handleSubmit = useCallback(
@@ -303,11 +303,10 @@ export function FlagSprintGame({ difficulty, continent, onGoHome }: FlagSprintGa
                 {gameState.attempts.map((attempt, i) => (
                   <span
                     key={i}
-                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
-                      attempt.correct
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${attempt.correct
                         ? "bg-[#22c55e]/15 text-[#22c55e]"
                         : "bg-[#ef4444]/15 text-[#ef4444]"
-                    }`}
+                      }`}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -410,9 +409,8 @@ export function FlagSprintGame({ difficulty, continent, onGoHome }: FlagSprintGa
 
           {/* Timer */}
           <div
-            className={`text-2xl font-bold tabular-nums ${
-              gameState.timeLeft <= 10 ? "text-[#ef4444] animate-pulse" : "text-[#f1f5f9]"
-            }`}
+            className={`text-2xl font-bold tabular-nums ${gameState.timeLeft <= 10 ? "text-[#ef4444] animate-pulse" : "text-[#f1f5f9]"
+              }`}
           >
             {gameState.timeLeft}s
           </div>
@@ -425,11 +423,10 @@ export function FlagSprintGame({ difficulty, continent, onGoHome }: FlagSprintGa
         <AnimatePresence>
           {lastAnswer && (
             <motion.div
-              className={`text-sm font-semibold px-3 py-1 rounded-lg ${
-                lastAnswer.correct
+              className={`text-sm font-semibold px-3 py-1 rounded-lg ${lastAnswer.correct
                   ? "bg-[#22c55e]/15 text-[#22c55e]"
                   : "bg-[#ef4444]/15 text-[#ef4444]"
-              }`}
+                }`}
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
@@ -450,13 +447,12 @@ export function FlagSprintGame({ difficulty, continent, onGoHome }: FlagSprintGa
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
           >
             <div
-              className={`rounded-2xl overflow-hidden border-4 shadow-2xl transition-colors duration-200 ${
-                feedbackState === "correct"
+              className={`rounded-2xl overflow-hidden border-4 shadow-2xl transition-colors duration-200 ${feedbackState === "correct"
                   ? "border-[#22c55e] shadow-[#22c55e]/20"
                   : feedbackState === "wrong"
                     ? "border-[#ef4444] shadow-[#ef4444]/20"
                     : "border-[#334155] shadow-black/30"
-              }`}
+                }`}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -511,11 +507,10 @@ export function FlagSprintGame({ difficulty, continent, onGoHome }: FlagSprintGa
                   {suggestions.map((name, i) => (
                     <button
                       key={name}
-                      className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                        i === selectedIndex
+                      className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${i === selectedIndex
                           ? "bg-[#1e293b] text-white"
                           : "text-[#cbd5e1] hover:bg-[#1e293b]"
-                      }`}
+                        }`}
                       onMouseDown={(e) => {
                         e.preventDefault();
                         handleSubmit(name);
