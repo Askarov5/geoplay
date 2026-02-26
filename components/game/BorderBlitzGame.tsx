@@ -468,14 +468,15 @@ export function BorderBlitzGame({ difficulty, continent, onGoHome }: BorderBlitz
           </div>
         </div>
 
-        {/* Zoomed world map showing anchor region */}
-        <div className="flex-1 flex items-center justify-center px-2 sm:px-4 py-2 min-h-0">
-          <div className="w-full max-w-2xl">
+        {/* SVG Map Section */}
+        <div className="flex-1 min-h-0 flex items-center justify-center relative px-2 py-2">
+          <div className="w-full h-full max-w-5xl">
             <WorldMap
               highlights={highlights}
+              startCountry={gameState?.anchorCode}
               focusRegion={focusRegion}
-              countryLabels={mapLabels}
-              className="w-full max-h-[45dvh]"
+              className="w-full h-full"
+              enableZoom
             />
           </div>
         </div>
@@ -536,8 +537,8 @@ export function BorderBlitzGame({ difficulty, continent, onGoHome }: BorderBlitz
                       <button
                         key={name}
                         className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${i === selectedIndex
-                            ? "bg-[#1e293b] text-white"
-                            : "text-[#cbd5e1] hover:bg-[#1e293b]"
+                          ? "bg-[#1e293b] text-white"
+                          : "text-[#cbd5e1] hover:bg-[#1e293b]"
                           }`}
                         onMouseDown={(e) => {
                           e.preventDefault();
@@ -578,8 +579,8 @@ export function BorderBlitzGame({ difficulty, continent, onGoHome }: BorderBlitz
                 onClick={handleSkip}
                 disabled={!skipEnabled}
                 className={`shrink-0 px-3 py-3 rounded-xl text-sm font-semibold transition-all border ${skipEnabled
-                    ? "bg-[#a855f7]/20 hover:bg-[#a855f7]/30 text-[#a855f7] border-[#a855f7]/30"
-                    : "bg-[#1e293b]/50 text-[#475569] border-[#1e293b] cursor-not-allowed"
+                  ? "bg-[#a855f7]/20 hover:bg-[#a855f7]/30 text-[#a855f7] border-[#a855f7]/30"
+                  : "bg-[#1e293b]/50 text-[#475569] border-[#1e293b] cursor-not-allowed"
                   }`}
                 title={
                   skipEnabled

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { AnimatePresence } from "framer-motion";
 import { WorldMap } from "@/components/map/WorldMap";
 import { PhaseReveal } from "./PhaseReveal";
@@ -138,6 +138,11 @@ export function ConnectGame({ difficulty, continent, onGoHome }: ConnectGameProp
     setHintCountry(null);
   }, [difficulty, continent]);
 
+  const focusRegion = useMemo(() => {
+    if (!gameState) return [];
+    return [gameState.startCountry, gameState.endCountry];
+  }, [gameState?.startCountry, gameState?.endCountry]);
+
   // Loading state while game initializes on client
   if (!gameState) {
     return (
@@ -152,7 +157,7 @@ export function ConnectGame({ difficulty, continent, onGoHome }: ConnectGameProp
   return (
     <div className="relative w-full h-dvh overflow-hidden bg-[#0a0e1a]">
       {/* World Map (always visible as background) */}
-      <div className="absolute inset-0 pointer-events-none">
+      <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
         <WorldMap
           startCountry={gameState.startCountry}
           endCountry={gameState.endCountry}
@@ -160,6 +165,7 @@ export function ConnectGame({ difficulty, continent, onGoHome }: ConnectGameProp
           optimalPath={gameState.optimalPath}
           showOptimalPath={gameState.phase === "resolution"}
           wrongFlash={wrongFlash}
+          focusRegion={focusRegion}
           className="w-full h-full"
         />
       </div>

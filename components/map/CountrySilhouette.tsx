@@ -114,7 +114,6 @@ export function CountrySilhouette({
 
     const padding = 20;
     const center = geoCentroid(countryFeature as GeoPermissibleObjects);
-    const bounds = geoBounds(countryFeature as GeoPermissibleObjects);
 
     // Use a Mercator projection centered on the country
     const proj = geoMercator()

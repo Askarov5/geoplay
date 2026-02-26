@@ -234,8 +234,8 @@ export function MapQuizGame({ difficulty, continent, onGoHome }: MapQuizGameProp
                 <div
                   key={i}
                   className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm ${attempt.correct
-                      ? "bg-[#22c55e]/10 text-[#22c55e]"
-                      : "bg-[#ef4444]/10 text-[#ef4444]"
+                    ? "bg-[#22c55e]/10 text-[#22c55e]"
+                    : "bg-[#ef4444]/10 text-[#ef4444]"
                     }`}
                 >
                   <span className="font-medium">
@@ -373,9 +373,8 @@ export function MapQuizGame({ difficulty, continent, onGoHome }: MapQuizGameProp
           <WorldMap
             highlights={highlights}
             onCountryClick={handleCountryClick}
-            enableZoom
             zoomContinent={continent !== "all" ? continent : undefined}
-            className="w-full max-h-[55dvh]"
+            className="w-full h-full"
           />
         </div>
       </div>

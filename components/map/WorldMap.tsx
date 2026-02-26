@@ -496,13 +496,12 @@ const WorldMapInner = ({
   const enableHover = !isZoomed || isClickable || enableZoom;
 
   return (
-    <div className={`relative overflow-hidden rounded-xl bg-[#0a0e1a] ${className}`}>
+    <div className={`relative flex items-center justify-center overflow-hidden rounded-xl bg-[#0a0e1a] ${className}`}>
       <svg
         ref={svgRef}
         viewBox={effectiveViewBox}
-        className={`w-full h-auto ${isInteractive ? "" : "pt-20"}${enableZoom ? " touch-none" : ""}`}
+        className={`w-full h-full ${isInteractive ? "" : "pt-20"}${enableZoom ? " touch-none" : ""}`}
         style={{
-          maxHeight: isInteractive ? undefined : "70vh",
           cursor: enableZoom ? (panStartRef.current ? "grabbing" : "grab") : undefined,
         }}
         onPointerDown={enableZoom ? handlePointerDown : undefined}
