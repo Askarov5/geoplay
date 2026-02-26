@@ -6,7 +6,7 @@ import { feature } from "topojson-client";
 import type { Topology, GeometryCollection } from "topojson-specification";
 import type { FeatureCollection } from "geojson";
 
-const TOPO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json";
+const TOPO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/land-110m.json";
 
 export function ScrollingGlobe() {
     const svgRef = useRef<SVGSVGElement>(null);
@@ -18,11 +18,11 @@ export function ScrollingGlobe() {
         fetch(TOPO_URL)
             .then((res) => res.json())
             .then((topology: Topology) => {
-                const countries = feature(
+                const landFeature = feature(
                     topology,
-                    topology.objects.countries as GeometryCollection
+                    topology.objects.land as GeometryCollection
                 ) as FeatureCollection;
-                setWorldData(countries);
+                setWorldData(landFeature);
             })
             .catch(console.error);
     }, []);
@@ -30,12 +30,8 @@ export function ScrollingGlobe() {
     useEffect(() => {
         if (!worldData || !svgRef.current || !landPathRef.current || !gratPathRef.current) return;
 
-        // We combine all features into a single geometry collection to draw in one shot.
-        // This is vastly faster than drawing 200 individual country paths on every frame.
-        const allLand = {
-            type: "GeometryCollection",
-            geometries: worldData.features.map(f => f.geometry)
-        };
+        // We use the pre-merged land features directly.
+        const allLand = worldData;
 
         const width = 800;
         const height = 800;
@@ -57,6 +53,7 @@ export function ScrollingGlobe() {
         let baseRotateX = 0;
         let targetScrollRotate = 0;
         let currentScrollRotate = 0;
+        let lastRenderedRot = -999; // Initialize with a value that ensures first render
 
         const onScroll = () => {
             // Get scroll percentage
@@ -69,16 +66,27 @@ export function ScrollingGlobe() {
         };
 
         const animate = () => {
+            // Abort if the component has unmounted and refs are null
+            if (!landPathRef.current || !gratPathRef.current) return;
+
             // Ambient rotation: ~3 degrees per second
             baseRotateX += 0.05;
 
             // Smoothly interpolate current scroll rotation towards target (10% per frame)
             currentScrollRotate += (targetScrollRotate - currentScrollRotate) * 0.1;
 
-            // Apply the combined rotation
-            projection.rotate([-baseRotateX + currentScrollRotate, -15, 0]);
-            landPathRef.current!.setAttribute("d", pathGenerator(allLand as GeoPermissibleObjects) || "");
-            gratPathRef.current!.setAttribute("d", pathGenerator(graticule as GeoPermissibleObjects) || "");
+            // Calculate the final rotation for the X-axis
+            const finalRot = -baseRotateX + currentScrollRotate;
+
+            // Only redraw if the rotation has changed by at least 0.05 degrees
+            // to avoid thrashing the CPU for sub-pixel invisible differences
+            if (Math.abs(finalRot - lastRenderedRot) >= 0.05) {
+                // Apply the combined rotation
+                projection.rotate([finalRot, -15, 0]);
+                landPathRef.current!.setAttribute("d", pathGenerator(allLand as GeoPermissibleObjects) || "");
+                gratPathRef.current!.setAttribute("d", pathGenerator(graticule as GeoPermissibleObjects) || "");
+                lastRenderedRot = finalRot;
+            }
 
             animationFrameId = requestAnimationFrame(animate);
         };
