@@ -417,7 +417,7 @@ export function BorderBlitzGame({ difficulty, continent, onGoHome }: BorderBlitz
         : "border-[#334155] focus-within:border-[#8b5cf6]";
 
   return (
-    <div className="min-h-dvh bg-[#0a0e1a] flex flex-col">
+    <div className="h-dvh w-full overflow-hidden bg-[#0a0e1a] flex flex-col">
       {/* Timer bar */}
       <div className="relative h-1 sm:h-1.5 bg-[#1e293b]">
         <motion.div

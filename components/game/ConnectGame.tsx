@@ -141,7 +141,7 @@ export function ConnectGame({ difficulty, continent, onGoHome }: ConnectGameProp
   const focusRegion = useMemo(() => {
     if (!gameState) return [];
     return [gameState.startCountry, gameState.endCountry];
-  }, [gameState?.startCountry, gameState?.endCountry]);
+  }, [gameState]);
 
   // Loading state while game initializes on client
   if (!gameState) {
@@ -157,7 +157,13 @@ export function ConnectGame({ difficulty, continent, onGoHome }: ConnectGameProp
   return (
     <div className="relative w-full h-dvh overflow-hidden bg-[#0a0e1a]">
       {/* World Map (always visible as background) */}
-      <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+      <div
+        className="absolute inset-x-0 pointer-events-none flex items-center justify-center transition-all duration-700 ease-in-out"
+        style={{
+          top: gameState.phase === "execution" ? "64px" : "0px",
+          bottom: gameState.phase === "execution" ? "260px" : "0px"
+        }}
+      >
         <WorldMap
           startCountry={gameState.startCountry}
           endCountry={gameState.endCountry}

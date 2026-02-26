@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { geoPath, geoMercator, geoBounds, geoCentroid, type GeoPermissibleObjects } from "d3-geo";
+import { geoPath, geoMercator, geoCentroid, type GeoPermissibleObjects } from "d3-geo";
 import { feature } from "topojson-client";
 import type { Topology, GeometryCollection } from "topojson-specification";
 import type { FeatureCollection, Feature, Geometry } from "geojson";

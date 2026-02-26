@@ -190,36 +190,29 @@ const WorldMapInner = ({
   const dynamicViewBox = useMemo(() => {
     if (!isZoomed) return "0 0 960 600";
 
-    // Project the anchor (first code) — this will be the viewBox center
-    const anchorCountry = countryByCode[focusRegion[0]];
-    const anchorPt = anchorCountry
-      ? projection([anchorCountry.coordinates[1], anchorCountry.coordinates[0]])
-      : null;
-
-    if (!anchorPt) return "0 0 960 600";
-
-    // Find the maximum distance from anchor to any neighbor point
-    let maxDx = 0;
-    let maxDy = 0;
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
 
     for (const code of focusRegion) {
       const country = countryByCode[code];
       if (!country) continue;
       const pt = projection([country.coordinates[1], country.coordinates[0]]);
       if (!pt) continue;
-      maxDx = Math.max(maxDx, Math.abs(pt[0] - anchorPt[0]));
-      maxDy = Math.max(maxDy, Math.abs(pt[1] - anchorPt[1]));
+      minX = Math.min(minX, pt[0]);
+      minY = Math.min(minY, pt[1]);
+      maxX = Math.max(maxX, pt[0]);
+      maxY = Math.max(maxY, pt[1]);
     }
 
-    const pad = 80;
-    // Half-width and half-height centered on anchor, with padding
-    const halfW = Math.max(maxDx + pad, 80);
-    const halfH = Math.max(maxDy + pad, 60);
+    if (!isFinite(minX)) return "0 0 960 600";
 
-    const w = halfW * 2;
-    const h = halfH * 2;
+    const pad = 60;
+    const w = Math.max((maxX - minX) + pad * 2, 80);
+    const h = Math.max((maxY - minY) + pad * 2, 60);
 
-    return `${anchorPt[0] - halfW} ${anchorPt[1] - halfH} ${w} ${h}`;
+    return `${minX - pad} ${minY - pad} ${w} ${h}`;
   }, [isZoomed, focusRegion, projection]);
 
   // Parse base viewBox for zoom computations
