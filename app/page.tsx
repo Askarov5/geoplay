@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { GameCard } from "@/components/ui/GameCard";
+import { ScrollingGlobe } from "@/components/map/ScrollingGlobe";
 import type { Continent, Difficulty } from "@/lib/game-engine/types";
 import {
   CONTINENTS,
@@ -130,124 +131,129 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="min-h-dvh bg-[#0a0e1a] flex flex-col">
-      {/* Language picker */}
-      <div className="flex justify-end px-4 pt-4">
-        <div className="flex gap-1 bg-[#111827] border border-[#1e293b] rounded-lg p-1">
-          {LOCALES.map((loc) => (
-            <button
-              key={loc.code}
-              onClick={() => setLocale(loc.code)}
-              className={`px-2.5 py-1 rounded text-xs font-semibold transition-all ${locale === loc.code
-                ? "bg-[#3b82f6] text-white"
-                : "text-[#94a3b8] hover:text-[#f1f5f9]"
-                }`}
-              title={loc.nativeName}
-            >
-              {loc.label}
-            </button>
-          ))}
-        </div>
-      </div>
+    <div className="min-h-dvh bg-[#0a0e1a] flex flex-col relative overflow-hidden">
+      {/* 3D background Globe */}
+      <ScrollingGlobe />
 
-      {/* Hero */}
-      <header className="pt-10 pb-8 px-4 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <h1 className="text-5xl md:text-7xl font-black tracking-tight">
-            <span className="text-[#f1f5f9]">GEO</span>
-            <span className="text-[#3b82f6]">PLAY</span>
-          </h1>
-          <p className="text-[#94a3b8] mt-3 text-lg max-w-md mx-auto">
-            {t("home.subtitle")}
-          </p>
-        </motion.div>
-      </header>
-
-      {/* Difficulty selector */}
-      <motion.div
-        className="px-4 pb-6 flex justify-center"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
-      >
-        <div className="inline-flex bg-[#111827] border border-[#1e293b] rounded-xl p-1">
-          {difficulties.map((diff) => {
-            const isSelected = selectedDifficulty === diff;
-            return (
+      {/* Content wrapper */}
+      <div className="relative z-10 flex flex-col min-h-dvh">
+        {/* Language picker */}
+        <div className="flex justify-end px-4 pt-4">
+          <div className="flex gap-1 bg-[#111827] border border-[#1e293b] rounded-lg p-1">
+            {LOCALES.map((loc) => (
               <button
-                key={diff}
-                onClick={() => setSelectedDifficulty(diff)}
-                className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${isSelected
-                  ? "bg-[#3b82f6] text-white shadow-lg shadow-[#3b82f6]/20"
+                key={loc.code}
+                onClick={() => setLocale(loc.code)}
+                className={`px-2.5 py-1 rounded text-xs font-semibold transition-all ${locale === loc.code
+                  ? "bg-[#3b82f6] text-white"
                   : "text-[#94a3b8] hover:text-[#f1f5f9]"
                   }`}
+                title={loc.nativeName}
               >
-                {t(difficultyKeys[diff].label)}
+                {loc.label}
               </button>
-            );
-          })}
+            ))}
+          </div>
         </div>
-      </motion.div>
 
-      {/* Continent selector */}
-      <motion.div
-        className="px-4 pb-8 flex justify-center"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.25 }}
-      >
-        <div className="flex flex-wrap justify-center gap-2">
-          {CONTINENTS.map((cont) => {
-            const isSelected = selectedContinent === cont.id;
-            return (
-              <button
-                key={cont.id}
-                onClick={() => setSelectedContinent(cont.id)}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all border ${isSelected
-                  ? "bg-[#1e293b] border-[#3b82f6] text-[#f1f5f9] shadow-lg shadow-[#3b82f6]/10"
-                  : "bg-[#111827] border-[#1e293b] text-[#94a3b8] hover:text-[#f1f5f9] hover:border-[#334155]"
-                  }`}
+        {/* Hero */}
+        <header className="pt-10 pb-8 px-4 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h1 className="text-5xl md:text-7xl font-black tracking-tight">
+              <span className="text-[#f1f5f9]">GEO</span>
+              <span className="text-[#3b82f6]">PLAY</span>
+            </h1>
+            <p className="text-[#94a3b8] mt-3 text-lg max-w-md mx-auto">
+              {t("home.subtitle")}
+            </p>
+          </motion.div>
+        </header>
+
+        {/* Difficulty selector */}
+        <motion.div
+          className="px-4 pb-6 flex justify-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          <div className="inline-flex bg-[#111827] border border-[#1e293b] rounded-xl p-1">
+            {difficulties.map((diff) => {
+              const isSelected = selectedDifficulty === diff;
+              return (
+                <button
+                  key={diff}
+                  onClick={() => setSelectedDifficulty(diff)}
+                  className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${isSelected
+                    ? "bg-[#3b82f6] text-white shadow-lg shadow-[#3b82f6]/20"
+                    : "text-[#94a3b8] hover:text-[#f1f5f9]"
+                    }`}
+                >
+                  {t(difficultyKeys[diff].label)}
+                </button>
+              );
+            })}
+          </div>
+        </motion.div>
+
+        {/* Continent selector */}
+        <motion.div
+          className="px-4 pb-8 flex justify-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.25 }}
+        >
+          <div className="flex flex-wrap justify-center gap-2">
+            {CONTINENTS.map((cont) => {
+              const isSelected = selectedContinent === cont.id;
+              return (
+                <button
+                  key={cont.id}
+                  onClick={() => setSelectedContinent(cont.id)}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all border ${isSelected
+                    ? "bg-[#1e293b] border-[#3b82f6] text-[#f1f5f9] shadow-lg shadow-[#3b82f6]/10"
+                    : "bg-[#111827] border-[#1e293b] text-[#94a3b8] hover:text-[#f1f5f9] hover:border-[#334155]"
+                    }`}
+                >
+                  <span className="mr-1.5">{cont.emoji}</span>
+                  {t(continentKeys[cont.id] || "continent.all")}
+                </button>
+              );
+            })}
+          </div>
+        </motion.div>
+
+        {/* Game modes */}
+        <main className="flex-1 px-4 pb-16">
+          <div className="max-w-xl mx-auto space-y-3">
+            {gameModes.map((mode, i) => (
+              <motion.div
+                key={mode.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 + i * 0.1 }}
               >
-                <span className="mr-1.5">{cont.emoji}</span>
-                {t(continentKeys[cont.id] || "continent.all")}
-              </button>
-            );
-          })}
-        </div>
-      </motion.div>
+                <GameCard
+                  title={mode.title}
+                  description={mode.description}
+                  icon={mode.icon}
+                  accentColor={mode.accentColor}
+                  available={mode.available}
+                  difficultyInfo={"difficultyInfo" in mode ? (mode as { difficultyInfo: string }).difficultyInfo : undefined}
+                  onClick={() => handleGameSelect(mode.path)}
+                />
+              </motion.div>
+            ))}
+          </div>
+        </main>
 
-      {/* Game modes */}
-      <main className="flex-1 px-4 pb-16">
-        <div className="max-w-xl mx-auto space-y-3">
-          {gameModes.map((mode, i) => (
-            <motion.div
-              key={mode.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 + i * 0.1 }}
-            >
-              <GameCard
-                title={mode.title}
-                description={mode.description}
-                icon={mode.icon}
-                accentColor={mode.accentColor}
-                available={mode.available}
-                difficultyInfo={"difficultyInfo" in mode ? (mode as { difficultyInfo: string }).difficultyInfo : undefined}
-                onClick={() => handleGameSelect(mode.path)}
-              />
-            </motion.div>
-          ))}
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="py-6 text-center text-xs text-[#475569]">
-        <p>{t("home.footer")}</p>
-      </footer>
+        <footer className="py-6 text-center text-xs text-[#475569]">
+          <p>{t("home.footer")}</p>
+        </footer>
+      </div>
     </div>
   );
 }
